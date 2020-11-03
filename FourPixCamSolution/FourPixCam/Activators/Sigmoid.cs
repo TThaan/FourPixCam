@@ -1,25 +1,25 @@
 ﻿using MatrixHelper;
 using System;
 
-namespace _4PixCam.Activators
+namespace FourPixCam.Activators
 {
-    public class Sigmoid : Activator
+    public class Sigmoid// : Activation
     {
         #region methods
 
-        public override float GetValue(float z)
+        public static float f(float z)
         {
             return 1 / (1 + (float)Math.Exp(-z));
         }
-        public override Matrix GetValue(Matrix z)
+        public static Matrix f(Matrix z)
         {
             throw new NotImplementedException();
         }
-        public override float GetDerivativeWithRespectTo(float z)
+        public static float df(float z)
         {
             return z * (1 - z);
         }
-        public override Matrix GetDerivativeWithRespectTo(Matrix z)
+        public static Matrix df(Matrix z)
         {
             throw new NotImplementedException();
         }

@@ -17,7 +17,7 @@ namespace FourPixCam
         public float[][] trainingData;
         public Dictionary<float[], float[]> expectedOutputOf;
         public Dictionary<float[], string> expectedResultOf;
-        float currentAccuracy;
+        // float currentAccuracy;
 
         LearningNet learningNet;
 
@@ -56,6 +56,8 @@ namespace FourPixCam
 
             foreach (float[] trainingSample in trainingData)
             {
+                // result = dictionary where key = value,
+                // but that need'nt be the case in other/more general neural nets.
                 result[trainingSample] = trainingSample;
             }
 
@@ -138,7 +140,7 @@ namespace FourPixCam
                 for (int sample = 0; sample < trainingData.Length; sample++)
                 {
                     learningNet.FeedForward(new Matrix(trainingData[sample]));
-                    Matrix t = new Matrix(expectedOutputOf[trainingData.ElementAt(sample)]);
+                    Matrix t = new Matrix(expectedOutputOf[trainingData[sample]]);
                     Matrix cost = learningNet.GetTotalCostOfLastSample(t);
                     learningNet.BackPropagate(t);    // I.e.: adjust weights and biases.
                 }

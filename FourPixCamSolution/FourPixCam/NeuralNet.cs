@@ -16,8 +16,8 @@ namespace FourPixCam
 
         public NeuralNet(params int[] layers)      // param jasonFile
         {
-            Layers = layers;
-            Length = layers.Count();
+            NeuronsPerLayer = layers;
+            L = layers.Count();
 
             WeightsRange = 2;
             BiasRange = 5;
@@ -28,55 +28,47 @@ namespace FourPixCam
 
         #region helper methods
 
-        /// <summary>
-        /// first dimension/ vertical interpretation = projective field/next layer
-        /// </summary>
-        /// <returns></returns>
         Matrix[] GetWeights()
         {
-            Matrix[] result = new Matrix[Length];
+            Matrix[] result = new Matrix[L];
 
-            // iterate over layers (skip layer[1])
-            for (int i = 1; i < Length; i++)
+            // Iterate over layers (skip first layer).
+            for (int l = 1; l < L; l++)
             {
-                Matrix weightMatrix = new Matrix(Layers[i], Layers[i - 1]);
+                Matrix weightsOfThisLayer = new Matrix(NeuronsPerLayer[l], NeuronsPerLayer[l - 1]);
 
-                // iterate over neurons per this layer
-                // weight matrix = only matrix where "this" neurons are horizontally aligned ?
-                for (int n = 0; n < Layers[i]; n++)
+                for (int j = 0; j < NeuronsPerLayer[l]; j++)
                 {
-                    // iterate over neurons per previous/receptive layer
-                    for (int m = 0; m < Layers[i-1]; m++)
+                    for (int k = 0; k < NeuronsPerLayer[l-1]; k++)
                     {
-                        weightMatrix[n, m] = WeightsRange / 2 * GetSmallRandomNumber();
+                        // The entry in the j-th row and k-th colum is w^l_jk
+                        // i.e. the weight connecting
+                        // from the k-th neuron of layer l-1
+                        // to the jth neuron of layer l.
+                        weightsOfThisLayer[j, k] = WeightsRange / 2 * GetSmallRandomNumber();
                     }
                 };
 
-                result[i] = weightMatrix;   // wa: result[0]?
+                result[l] = weightsOfThisLayer;   // wa: result[0]?
             }
 
             return result;
         }
-        /// <summary>
-        /// Why are all first neurons biases 0?
-        /// </summary>
-        /// <returns></returns>
         Matrix[] GetBiases()
         {
-            Matrix[] result = new Matrix[Length];
+            Matrix[] result = new Matrix[L];
 
-            // iterate over layers (skip layer[1])
-            for (int i = 1; i < Length; i++)
+            // Iterate over layers (skip first layer).
+            for (int l = 1; l < L; l++)
             {
-                Matrix biasMatrix = new Matrix(Layers[i], 1);
+                Matrix biasesOfThisLayer = new Matrix(NeuronsPerLayer[l], 1);
 
-                // iterate over neurons per this layer
-                for (int m = 0; m < Layers[i]; m++)
+                for (int j = 0; j < NeuronsPerLayer[l]; j++)
                 {
-                    biasMatrix[m, 0] = BiasRange / 2 * GetSmallRandomNumber();
+                    biasesOfThisLayer[j, 0] = BiasRange / 2 * GetSmallRandomNumber();
                 };
 
-                result[i] = biasMatrix;   // wa: result[0]?
+                result[l] = biasesOfThisLayer;   // wa: result[0]?
             }
 
             return result;
@@ -95,8 +87,8 @@ namespace FourPixCam
 
         #region properties
 
-        public int[] Layers { get; set; }
-        public int Length { get; }
+        public int[] NeuronsPerLayer { get; set; }
+        public int L { get; }
         public Matrix[] w { get; set; }
         public Matrix[] b { get; set; }
 

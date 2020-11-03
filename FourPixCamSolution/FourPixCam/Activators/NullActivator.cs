@@ -1,24 +1,24 @@
 ﻿using MatrixHelper;
 using System;
 
-namespace _4PixCam.Activators
+namespace FourPixCam.Activators
 {
-    class NullActivator : Activator
+    class NullActivator// : Activation
     {
-        public override float GetValue(float z)
+        public static float f(float z)
         {
             return z;
         }
-        public override Matrix GetValue(Matrix z)
+        public static Matrix f(Matrix z)
         {
             return z;
         }
 
-        public override float GetDerivativeWithRespectTo(float z)
+        public static float df(float z)
         {
             throw new NotImplementedException();
         }
-        public override Matrix GetDerivativeWithRespectTo(Matrix z)
+        public static Matrix df(Matrix z)
         {
             throw new NotImplementedException();
         }

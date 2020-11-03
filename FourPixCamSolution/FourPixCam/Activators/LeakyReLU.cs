@@ -1,31 +1,31 @@
 ﻿using MatrixHelper;
 using System.Linq;
 
-namespace _4PixCam.Activators
+namespace FourPixCam.Activators
 {
-    public class LeakyReLU : Activator
+    public class LeakyReLU// : Activation
     {
         #region methods
 
-        public override float GetValue(float z)
+        public static float f(float z)
         {
             return z > 0
                 ? z
                 : z / 100;
         }
-        public override Matrix GetValue(Matrix z)
+        public static Matrix f(Matrix z)
         {
             return new Matrix(
                 z.Select(x => x > 0f ? x : x/100)
                 .ToArray());
         }
-        public override float GetDerivativeWithRespectTo(float z)
+        public static float df(float z)
         {
             return z > 0
                 ? 1f
                 : 1f / 100;
         }
-        public override Matrix GetDerivativeWithRespectTo(Matrix z)
+        public static Matrix df(Matrix z)
         {
             return new Matrix(
                 z.Select(x => x > 0f ? 1f : 1f / 100)

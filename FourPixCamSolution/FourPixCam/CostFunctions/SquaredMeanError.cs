@@ -1,22 +1,25 @@
 ﻿using MatrixHelper;
+using System.Linq;
 
-namespace _4PixCam.CostFunctions
+namespace FourPixCam.CostFunctions
 {
-    class SquaredMeanError : CostFunction
+    class SquaredMeanError
     {
-        public override float GetCost(float a, float t)
+        public static float C(float a, float t)
         {
             return 0.5f * (t-a) * (t - a);
         }
-        public override Matrix GetCost(Matrix a, Matrix t)
+        public static Matrix C(Matrix a, Matrix t)
         {
-            return 0.5f * (t - a) * (t - a);
-        }
-        public override float GetCostDerivative(float a, float t)
+            Matrix gap = t - a;
+            Matrix gapSquared = Operations.HadamardProduct(gap, gap);   // Wwn overloaded method in MatrixHelper for hadamard-square?
+            return gapSquared;// 0.5f * (t - a) * (t - a);
+        }   
+        public static float dC(float a, float t)
         {
             return a - t;
         }
-        public override Matrix GetCostDerivative(Matrix a, Matrix t)
+        public static Matrix dC(Matrix a, Matrix t)
         {
             return a - t;
         }
