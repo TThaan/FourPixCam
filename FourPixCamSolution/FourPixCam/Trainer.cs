@@ -141,7 +141,7 @@ namespace FourPixCam
                 {
                     learningNet.FeedForward(new Matrix(trainingData[sample]));
                     Matrix t = new Matrix(expectedOutputOf[trainingData[sample]]);
-                    Matrix cost = learningNet.GetTotalCostOfLastSample(t);
+                    // Matrix cost = learningNet.GetTotalCostOfLastSample(t);
                     learningNet.BackPropagate(t);    // I.e.: adjust weights and biases.
                 }
 

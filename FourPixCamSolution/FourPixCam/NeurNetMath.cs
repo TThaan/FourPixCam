@@ -6,6 +6,9 @@ using static MatrixHelper.Operations;
 
 namespace FourPixCam
 {
+    // wa: not static but as idisp-instance for each back-prop
+    // including stored arrays '..ofLayer[l]'?
+
     public class NeurNetMath
     {
         public enum ActivationType
@@ -28,52 +31,36 @@ namespace FourPixCam
                 case ActivationType.Undefined:
                     throw new System.ArgumentException("Undefined activator function");
                 case ActivationType.LeakyReLU:
-                    return LeakyReLU.f(z);
+                    return LeakyReLU.a(z);
                 case ActivationType.NullActivator:
-                    return NullActivator.f(z);
+                    return NullActivator.a(z);
                 case ActivationType.Sigmoid:
-                    return Sigmoid.f(z);
+                    return Sigmoid.a(z);
                 case ActivationType.SoftMax:
-                    return SoftMax.f(z);
+                    return SoftMax.a(z);
                 default:
                     throw new System.ArgumentException("Undefined activator function");
             }
         }
-        public static Matrix delta(Matrix a, Matrix t, CostType costType, ActivationType activationType, Matrix z)
+        public static Matrix dadz(Matrix z, ActivationType activationType)
         {
-            Matrix cost;
-
-            switch (costType)
-            {
-                case CostType.Undefined:
-                    throw new ArgumentException("Undefined cost function");
-                case CostType.SquaredMeanError:
-                    cost = C0(a, t, costType);
-                    break;
-                default:
-                    throw new ArgumentException("Undefined cost function");
-            }
-
             switch (activationType)
             {
                 case ActivationType.Undefined:
-                    throw new System.ArgumentException("Undefined activator function");
+                    throw new ArgumentException("Undefined activator function");
                 case ActivationType.LeakyReLU:
-                    return cost * LeakyReLU.df(z);
+                    return LeakyReLU.dadz(z);
                 case ActivationType.NullActivator:
-                    return cost * NullActivator.df(z);
+                    return NullActivator.dadz(z);
                 case ActivationType.Sigmoid:
-                    return cost * Sigmoid.df(z);
+                    return Sigmoid.dadz(z);
                 case ActivationType.SoftMax:
-                    return cost * SoftMax.df(z);
+                    return SoftMax.dadz(z);
                 default:
-                    throw new System.ArgumentException("Undefined activator function");
+                    throw new ArgumentException("Undefined activator function");
             }
         }
-        /// <summary>
-        /// Return matrix or scalar?
-        /// </summary>
-        public static Matrix C0(Matrix a, Matrix t, CostType costType)
+        public static float C(Matrix a, Matrix t, CostType costType)
         {
             switch (costType)
             {
@@ -84,6 +71,29 @@ namespace FourPixCam
                 default:
                     throw new ArgumentException("Undefined cost function");
             }
+        }
+        public static Matrix dCda(Matrix a, Matrix t, CostType costType)
+        {
+            switch (costType)
+            {
+                case CostType.Undefined:
+                    throw new ArgumentException("Undefined cost function");
+                case CostType.SquaredMeanError:
+                    return SquaredMeanError.dCda(a, t);
+                default:
+                    throw new ArgumentException("Undefined cost function");
+            }
+        }
+        public static Matrix deltaOfOutputLayer(Matrix a, Matrix t, CostType costType, Matrix dadz)
+        {
+            return HadamardProduct(dCda(a, t, costType), dadz);
+        }
+        public static Matrix deltaOfHiddenLayer(Matrix w, Matrix error, Matrix dadz)
+        {
+            Matrix wTranspose = w.GetTranspose();
+            // rename tmp
+            Matrix tmp = ScalarProduct(wTranspose, error);
+            return HadamardProduct(tmp, dadz);
         }
     }
 }

@@ -15,7 +15,7 @@ namespace FourPixCam
 
             net.DumpToExplorer();
             trainer.Train(0.02f, 10);
-
+            Console.ReadLine();
             // net.DumpToConsole(true);
             // var test = net.GetTotalOutput(trainer.trainingData.First());
 
