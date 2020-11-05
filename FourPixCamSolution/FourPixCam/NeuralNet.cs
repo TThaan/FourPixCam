@@ -24,6 +24,40 @@ namespace FourPixCam
 
             w = GetWeights();
             b = GetBiases();
+
+            //w = new[]
+            //{
+            //    null, 
+            //    new Matrix(new [,]
+            //    {
+            //        { .4f, .8f, -.4f},
+            //        { .6f, .8f, -.6f},
+            //        { .4f, .6f, -.4f},
+            //        { .8f, .2f, -.2f }
+            //    }),
+            //    new Matrix(new [,]
+            //    {
+            //        { .1f, -.1f, .2f, -.2f},
+            //        { .2f, -.2f, .4f, -.4f}
+            //    })
+            //};
+
+            //b = new[]
+            //{
+            //    null,
+            //    new Matrix(new [,]
+            //    {
+            //        { 1f },
+            //        { 3f },
+            //        { 2f },
+            //        { 2f }
+            //    }),
+            //    new Matrix(new [,]
+            //    {
+            //        { 2f },
+            //        { 4f }
+            //    })
+            //};
         }
 
         #region helper methods

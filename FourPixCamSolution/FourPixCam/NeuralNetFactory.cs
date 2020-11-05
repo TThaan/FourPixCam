@@ -20,7 +20,7 @@ namespace FourPixCam
 
         public static NeuralNet GetNeuralNet(string jsonSource)
         {
-            return new NeuralNet(4,4,4,8,4);
+            return new NeuralNet(4, 4, 4, 8, 4);//3, 4,2
         }
 
         #region helper methods

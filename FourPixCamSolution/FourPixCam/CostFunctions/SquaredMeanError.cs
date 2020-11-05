@@ -19,7 +19,7 @@ namespace FourPixCam.CostFunctions
         {
             Matrix gap = t - a;
             Matrix gapSquared = Operations.HadamardProduct(gap, gap);   // Overloaded method in MatrixHelper for hadamard-square?
-            return gapSquared.Sum();// 0.5f * (t - a) * (t - a);
+            return gapSquared.Sum() / 2;// 0.5f * (t - a) * (t - a);
         }
         /// <summary>
         /// Partial derivative of the cost

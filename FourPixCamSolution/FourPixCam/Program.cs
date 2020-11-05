@@ -8,14 +8,14 @@ namespace FourPixCam
         {
             NeuralNet net = NeuralNetFactory.GetNeuralNet("");
             Trainer trainer = new Trainer(net);
-
-            //string debug;
-            //net.DumpToHTMLDebugger(out debug);
-            //net.DumpToConsole(true);
-
             net.DumpToExplorer();
-            trainer.Train(0.02f, 10);
+
+            var trainigData = DataFactory.GetTrainingData(100);
+            var testingData = DataFactory.GetTrainingData(10);
+            trainer.Train(trainigData, testingData, 0.02f, 10);
+
             Console.ReadLine();
+
             // net.DumpToConsole(true);
             // var test = net.GetTotalOutput(trainer.trainingData.First());
 

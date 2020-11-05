@@ -51,7 +51,7 @@ namespace FourPixCam
         /// <summary>
         /// expected output
         /// </summary>
-        public Matrix t { get; set; }
+        public Matrix t { get; set; }   // redundant?
         public float C { get; set; }
         /// <summary>
         /// total value (= wa + b)
@@ -74,7 +74,7 @@ namespace FourPixCam
 
         #region methods
 
-        public void FeedForward(Matrix input)
+        public Matrix FeedForwardAndGetOutput(Matrix input)
         {
             // a[0] = input layer
             a_OfLayer[0] = new Matrix(input.ToArray());
@@ -85,9 +85,14 @@ namespace FourPixCam
                 z_OfLayer[i] = NeurNetMath.z(net.w[i], a_OfLayer[i - 1], net.b[i]);
                 a_OfLayer[i] = NeurNetMath.a(z_OfLayer[i], ActivationType_OfLayer[i]);
             }
+
+            return a_OfLayer.Last();
         }
-        public void BackPropagate(Matrix t)
+        public void BackPropagate(Matrix y)
         {
+            // debug
+            // var v1 = NeurNetMath.C(a_OfLayer[net.L-1], y, CostType.SquaredMeanError);
+
             // Iterate backwards over each layer (skip input layer).
             for (int l = net.L - 1; l > 0; l--)
             {
@@ -97,7 +102,7 @@ namespace FourPixCam
                 if (l == net.L - 1)
                 {
                     // .. and C0 instead of a[i] and t as parameters here?
-                    error = NeurNetMath.deltaOfOutputLayer(a_OfLayer[l], t, CostType.SquaredMeanError, dadz_OfLayer[l]);
+                    error = NeurNetMath.deltaOfOutputLayer(a_OfLayer[l], y, CostType.SquaredMeanError, dadz_OfLayer[l]);
                 }
                 else
                 {

@@ -1,6 +1,4 @@
-﻿using MatrixHelper;
-using System;
-using System.Collections.Generic;
+﻿using System;
 using System.Linq;
 
 namespace FourPixCam
@@ -11,19 +9,11 @@ namespace FourPixCam
     /// </summary>
     public class Trainer
     {
-        #region fields
+        #region ctor & fields
 
         Random rnd;
-        public float[][] trainingData;
-        public Dictionary<float[], float[]> expectedOutputOf;
-        public Dictionary<float[], string> expectedResultOf;
-        // float currentAccuracy;
-
+        float currentAccuracy;
         LearningNet learningNet;
-
-        #endregion
-
-        #region ctor
 
         public Trainer(NeuralNet net)
         {
@@ -31,97 +21,7 @@ namespace FourPixCam
             learningNet = new LearningNet(net);
 
             rnd = RandomProvider.GetThreadRandom();
-            trainingData = GetTrainingData(100);
-            expectedOutputOf = GetExpectedOutput();
-            expectedResultOf = GetExpectedResult();
         }
-
-        #region helper methods
-
-        float[][] GetTrainingData(int sampleSize)
-        {
-            return Enumerable.Range(0, sampleSize)
-                .Select(x => new float[]
-                {
-                    (float)Math.Round(rnd.NextDouble()),
-                    (float)Math.Round(rnd.NextDouble()),
-                    (float)Math.Round(rnd.NextDouble()),
-                    (float)Math.Round(rnd.NextDouble())
-                })
-                .ToArray();
-        }
-        Dictionary<float[], float[]> GetExpectedOutput()
-        {
-            Dictionary<float[], float[]> result = new Dictionary<float[], float[]>();
-
-            foreach (float[] trainingSample in trainingData)
-            {
-                // result = dictionary where key = value,
-                // but that need'nt be the case in other/more general neural nets.
-                result[trainingSample] = trainingSample;
-            }
-
-            return result;
-        }
-        Dictionary<float[], string> GetExpectedResult()
-        {
-            Dictionary<float[], string> result = new Dictionary<float[], string>();
-
-            foreach (float[] trainingSample in trainingData)
-            {
-                result[trainingSample] = GetLabel(trainingSample);
-            }
-
-            return result;
-        }
-        string GetLabel(float[] sample)
-        {
-            float _0 = sample[0];
-            float _1 = sample[1];
-            float _2 = sample[2];
-            float _3 = sample[3];
-
-            if (_0 == _1)
-            {
-                if (_2 == _3)
-                {
-                    if (_0 == _2)
-                    {
-                        return _0 == 0
-                            ? "AllBlack"
-                            : "AllWhite";
-                    }
-                    else
-                    {
-                        return _0 == 0
-                            ? "Black Top - White Bottom (hori)"
-                            : "White Top - Black Bottom (hori)";
-                    }
-                }
-            }
-            else if (_0 == _2)
-            {
-                if (_1 == _3)
-                {
-                    return _0 == 0
-                        ? "Black Left - White Right (vert)"
-                        : "White Left - Black Right (vert)";
-                }
-            }
-            else if (_0 == _3)
-            {
-                if (_1 == _2)
-                {
-                    return _0 == 0
-                        ? "Black TopLeft & RightBottom (diag)"
-                        : "White TopLeft & RightBottom (diag)";
-                }
-            }
-
-            return "No match.";
-        }
-
-        #endregion
 
         #endregion
 
@@ -133,23 +33,33 @@ namespace FourPixCam
 
         #region methods
         
-        public void Train(float learningRate, int epochs)
+        public void Train(Sample[] trainingData, Sample[] testingData, float learningRate, int epochs)
         {
             for (int epoch = 0; epoch < epochs; epoch++)
             {
-                for (int sample = 0; sample < trainingData.Length; sample++)
-                {
-                    learningNet.FeedForward(new Matrix(trainingData[sample]));
-                    Matrix t = new Matrix(expectedOutputOf[trainingData[sample]]);
-                    // Matrix cost = learningNet.GetTotalCostOfLastSample(t);
-                    learningNet.BackPropagate(t);    // I.e.: adjust weights and biases.
-                }
-
-                //currentAccuracy = TrainEpoch(learningRate);
+                currentAccuracy = TrainEpoch(trainingData.ToArray(), testingData, learningRate);
                 learningRate *= .9f;   // This help to avoids oscillation as our accuracy improves.
             }
+
+            // var testAccuracy = ((Test(new FiringNetwork(Network), testingData) * 100).ToString("N1") + "%");
+            // TrainingInfo += $"\r\nTotal epochs = {CurrentEpoch}\r\nFinal test accuracy = {testAccuracy}";
+
+            Console.WriteLine("Finished training.");
         }
 
+        float TrainEpoch(Sample[] trainingSet, Sample[] testingData, double learningRate)
+        {
+            Shuffle(trainingSet);
+
+            for (int sample = 0; sample < trainingSet.Length; sample++)
+            {
+                var output = learningNet.FeedForwardAndGetOutput(trainingSet[sample].Input);
+                // trainingSet[sample].IsOutputCorrect(output);
+                learningNet.BackPropagate(trainingSet[sample].ExpectedOutput);    // I.e.: adjust weights and biases.
+            }
+
+            return Test(testingData);
+        }
         /*
         double TrainEpoch(double learningRate)
         {
@@ -181,16 +91,33 @@ namespace FourPixCam
 
             return Test(new FiringNet(Net), trainingData.Take(10000).ToArray()) * 100;
         }*/
-        void Shuffle(float[][] trainingData)
+        void Shuffle(Sample[] trainingData)
         {
             int n = trainingData.Length;
+
             while (n > 1)
             {
                 int k = rnd.Next(n--);
-                float[] temp = trainingData[n];
+
+                // Exchange arr[n] with arr[k]
+
+                Sample temp = trainingData.ElementAt(n);
                 trainingData[n] = trainingData[k];
                 trainingData[k] = temp;
             }
+        }
+        float Test(Sample[] testingData)
+        {
+            int bad = 0, good = 0;
+            foreach (var sample in testingData)
+            {
+                var output = learningNet.FeedForwardAndGetOutput(sample.Input);
+                if (sample.IsOutputCorrect(output))
+                    good++;
+                else
+                    bad++;
+            }
+            return (float)good / (good + bad);
         }
 
         #endregion
