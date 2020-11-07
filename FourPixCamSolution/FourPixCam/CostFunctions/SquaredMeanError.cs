@@ -6,6 +6,14 @@ namespace FourPixCam.CostFunctions
     class SquaredMeanError
     {
         /// <summary>
+        /// Cost Matrix
+        /// </summary>
+        public static Matrix C(Matrix a, Matrix t)
+        {
+            Matrix gap = t - a;
+            return .5f * Operations.HadamardProduct(gap, gap);   // Overloaded method in MatrixHelper for hadamard-square?
+        }
+        /// <summary>
         /// Half the squared difference between expected and actual output.
         /// </summary>
         public static float C(float a, float t)
@@ -15,11 +23,9 @@ namespace FourPixCam.CostFunctions
         /// <summary>
         /// Half the squared difference between expected and actual output.
         /// </summary>
-        public static float C(Matrix a, Matrix t)
+        public static float CTotal(Matrix a, Matrix t)
         {
-            Matrix gap = t - a;
-            Matrix gapSquared = Operations.HadamardProduct(gap, gap);   // Overloaded method in MatrixHelper for hadamard-square?
-            return gapSquared.Sum() / 2;// 0.5f * (t - a) * (t - a);
+            return C(a, t).Sum();
         }
         /// <summary>
         /// Partial derivative of the cost

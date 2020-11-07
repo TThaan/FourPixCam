@@ -27,7 +27,7 @@ namespace FourPixCam
             Z = new Matrix[net.L];
             A = new Matrix[net.L];
             dadz_OfLayer = new Matrix[net.L];
-            E = new Matrix[net.L];
+            Delta = new Matrix[net.L];
         }
 
         #region helper methods
@@ -54,7 +54,7 @@ namespace FourPixCam
         /// </summary>
         public Matrix[] A { get; set; }
         public Matrix[] dadz_OfLayer { get; set; }  // => Matrix.Partial(f, a);
-        public Matrix[] E { get; set; }
+        public Matrix[] Delta { get; set; }
         public Matrix[] F { get; set; } // => activations[]
 
         public CostType CostType { get; set; }
@@ -89,13 +89,22 @@ namespace FourPixCam
         }
         public void BackPropagate(Matrix y, float learningRate)
         {
+            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
+            Console.WriteLine($"                                        B A C K P R O P A P A G A T I O N");
+            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
+            Console.WriteLine();
+
             // debug
-            // var v1 = NeurNetMath.C(a_OfLayer[net.L-1], y, CostType.SquaredMeanError);
+            var c = NeurNetMath.C(A[net.L - 1], y, CostType.SquaredMeanError)
+                .DumpToConsole($"\n{CostType.SquaredMeanError} C =");
+            var cTotal = NeurNetMath.CTotal(A[net.L - 1], y, CostType.SquaredMeanError);
+            Console.WriteLine($"\nCTotal = {cTotal}\n");
 
             // Iterate backwards over each layer (skip input layer).
             for (int l = net.L - 1; l > 0; l--)
             {
-                dadz_OfLayer[l] = NeurNetMath.dadz(Z[l], net.ActivationTypes[l]);
+                dadz_OfLayer[l] = NeurNetMath.dadz(Z[l], net.ActivationTypes[l])
+                    .DumpToConsole($"\ndadz{l} =");
                 Matrix error;
 
                 if (l == net.L - 1)
@@ -105,16 +114,20 @@ namespace FourPixCam
                 }
                 else
                 {
-                    error = NeurNetMath.deltaOfHiddenLayer(net.W[l + 1], E[l + 1], dadz_OfLayer[l]);
+                    error = NeurNetMath.deltaOfHiddenLayer(net.W[l + 1], Delta[l + 1], dadz_OfLayer[l]);
                 }
 
-                E[l] = error;
+                Delta[l] = error.DumpToConsole($"\ndelta{l} =");
             }
 
-            // Adjust weights and biases.
-            for (int l = 0; l < net.L - 1; l++)
+            // Adjust weights and biases (skip input layer).
+            for (int l = 1; l < net.L; l++)
             {
-                net.W[l] = GetCorrectedMatrix(net.W[l], A[l-1], E[l], learningRate);
+                // E or delta ?
+                net.W[l] = GetCorrectedWeights(net.W[l], A[l-1], Delta[l], learningRate)
+                        .DumpToConsole($"\nadjusted w{l} =");
+                net.B[l] = GetCorrectedWeights(net.B[l], A[l - 1], Delta[l], learningRate)
+                        .DumpToConsole($"\nadjusted b{l} =");
             }
         }
 

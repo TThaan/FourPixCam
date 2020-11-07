@@ -61,7 +61,7 @@ namespace FourPixCam
                     throw new ArgumentException("Undefined activator function");
             }
         }
-        public static float C(Matrix a, Matrix t, CostType costType)
+        public static Matrix C(Matrix a, Matrix t, CostType costType)
         {
             switch (costType)
             {
@@ -69,6 +69,18 @@ namespace FourPixCam
                     throw new ArgumentException("Undefined cost function");
                 case CostType.SquaredMeanError:
                     return SquaredMeanError.C(a, t);
+                default:
+                    throw new ArgumentException("Undefined cost function");
+            }
+        }
+        public static float CTotal(Matrix a, Matrix t, CostType costType)
+        {
+            switch (costType)
+            {
+                case CostType.Undefined:
+                    throw new ArgumentException("Undefined cost function");
+                case CostType.SquaredMeanError:
+                    return SquaredMeanError.CTotal(a, t);
                 default:
                     throw new ArgumentException("Undefined cost function");
             }
@@ -96,31 +108,28 @@ namespace FourPixCam
             Matrix tmp = ScalarProduct(wTranspose, error);
             return HadamardProduct(tmp, dadz);
         }
-        public static Matrix GetCorrectedMatrix(Matrix matrix, Matrix a, Matrix e, float learningRate)
+        public static Matrix GetCorrectedWeights(Matrix w, Matrix a, Matrix e, float learningRate)
         {
             // = dCda*dadz*dzdw = error^L * a^(L-1) ??
-            Matrix dCdw = HadamardProduct(e, a);
-            return matrix - learningRate * dCdw;
+
+
+            // Matrix dCdw = HadamardProduct(e, a);
+            // return w - learningRate * dCdw;
+
+            Matrix result = new Matrix(w.m, w.n);
+            for (int j = 0; j < w.m; j++)
+            {
+                for (int k = 0; k < w.n; k++)
+                {
+                    result[j, k] = w[j, k] - a[k, 0] * e[j, 0];
+                }
+            }
+
+            return result;
         }
-        //public static Matrix[] GetCorrectedWeights(Matrix[] w_ofLayer, Matrix[] error_ofLayer, float learningRate)
-        //{
-        //    Matrix[] result = new Matrix[w_ofLayer.Length];
-
-        //    for (int l = 0; l < w_ofLayer.Length; l++)
-        //    {
-        //        Matrix currentLayer = new Matrix(w_ofLayer)
-        //        for (int j = 0; j < w_ofLayer.m; j++)
-        //        {
-        //            for (int k = 0; k < w_ofLayer.n; k++)
-        //            {
-        //                // = dCda*dadz*dzdw = error^L * a^(L-1) ??
-        //                float dCdw =
-        //                w_ofLayer[j, k] = w_ofLayer[j, k] - learningRate *
-        //            }
-        //        }
-        //    }
-
-        //    return result;
-        //}
+        public static Matrix GetCorrectedBiases(Matrix b, Matrix e, float learningRate)
+        {
+            return b - learningRate * e;
+        }
     }
 }

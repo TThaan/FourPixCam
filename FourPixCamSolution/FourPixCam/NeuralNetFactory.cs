@@ -1,6 +1,7 @@
 ﻿using FourPixCam.Enums;
 using MatrixHelper;
 using System;
+using System.Linq;
 
 namespace FourPixCam
 {
@@ -23,7 +24,7 @@ namespace FourPixCam
 
             var layers = new[] { 4, 4, 4, 8, 4 };
             float weightRange = 2;
-            float biasRange = 10;
+            float biasRange = .1f;
 
             var result = new NeuralNet()
             {
@@ -60,7 +61,7 @@ namespace FourPixCam
                         // i.e. the weight connecting
                         // from the k-th neuron of layer l-1
                         // to the jth neuron of layer l.
-                        weightsOfThisLayer[j, k] = weightRange / 2 * GetSmallRandomNumber();
+                        weightsOfThisLayer[j, k] = weightRange / 2 * GetRandom10th();// * GetSmallRandomNumber();
                     }
                 };
 
@@ -80,7 +81,7 @@ namespace FourPixCam
 
                 for (int j = 0; j < layers[l]; j++)
                 {
-                    biasesOfThisLayer[j, 0] = biasRange / 2 * GetSmallRandomNumber();
+                    biasesOfThisLayer[j, 0] = biasRange / 2 * GetRandom10th();// * GetSmallRandomNumber();
                 };
 
                 result[l] = biasesOfThisLayer;   // wa: result[0]?
@@ -108,6 +109,11 @@ namespace FourPixCam
                 ActivationType.ReLU,        // Try LeakyReLU here.
                 ActivationType.ReLU
             };
+        }
+        static float GetRandom10th()
+        {
+            var x = (rnd.NextDouble() + .1f);
+            return (float)Math.Round(x <= .9 ? x : .9, 1);
         }
 
         #endregion

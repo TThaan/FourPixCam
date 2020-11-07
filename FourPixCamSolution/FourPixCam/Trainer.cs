@@ -1,4 +1,5 @@
-﻿using System;
+﻿using MatrixHelper;
+using System;
 using System.Linq;
 
 namespace FourPixCam
@@ -37,8 +38,17 @@ namespace FourPixCam
         {
             for (int epoch = 0; epoch < epochs; epoch++)
             {
+                Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
+                Console.WriteLine($"                                         T R A I N I N G");
+                Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
+                Console.WriteLine();
+                Console.WriteLine($"                                    Learning Rate   : {learningRate}");
+                Console.WriteLine($"                                    Epoch           : {epoch}/{epochs}\n");
+
                 currentAccuracy = TrainEpoch(trainingData, testingData, learningRate);
                 learningRate *= .9f;   // This help to avoids oscillation as our accuracy improves.
+
+                Console.WriteLine($"                                    CurrentAccuracy : {currentAccuracy}");
             }
 
             // var testAccuracy = ((Test(new FiringNetwork(Network), testingData) * 100).ToString("N1") + "%");
@@ -55,9 +65,7 @@ namespace FourPixCam
             {
                 var output = learningNet.FeedForwardAndGetOutput(trainingSet[sample].Input);
                 // trainingSet[sample].IsOutputCorrect(output);
-                learningNet.BackPropagate(trainingSet[sample].ExpectedOutput, learningRate);    
-                
-
+                learningNet.BackPropagate(trainingSet[sample].ExpectedOutput.DumpToConsole("\ny ="), learningRate);   
             }
 
             return Test(testingData);
