@@ -1,12 +1,11 @@
 ﻿using MatrixHelper;
 using System;
+using System.Linq;
 
 namespace FourPixCam.Activators
 {
-    public class Sigmoid// : Activation
+    public class Sigmoid
     {
-        #region methods
-
         /// <summary>
         /// Activation ('squashing') function of the weighted input z.
         /// </summary>
@@ -19,7 +18,9 @@ namespace FourPixCam.Activators
         /// </summary>
         public static Matrix a(Matrix z)
         {
-            throw new NotImplementedException();
+            return new Matrix(
+                z.Select(x => 1 / (1 + (float)Math.Exp(-x)))
+                .ToArray());
         }
         /// <summary>
         /// Derivation of the activation ('squashing') function with respect to the weighted input z.
@@ -33,9 +34,9 @@ namespace FourPixCam.Activators
         /// </summary>
         public static Matrix dadz(Matrix z)
         {
-            throw new NotImplementedException();
+            return new Matrix(
+                z.Select(x => x * (1 - x))
+                .ToArray());
         }
-
-        #endregion
     }
 }

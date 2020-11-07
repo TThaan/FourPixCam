@@ -1,4 +1,5 @@
-﻿using MatrixHelper;
+﻿using FourPixCam.Enums;
+using MatrixHelper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,10 +11,18 @@ namespace FourPixCam
         #region ctor & fields
 
         static Random rnd;
+        static Dictionary<Label, Matrix> rawInputs;
+        static Dictionary<Label, Matrix> validInputs;
+        static Dictionary<Label, Matrix> validOutputs;
+        static Sample[] validSamples;
 
         static DataFactory()
         {
             rnd = RandomProvider.GetThreadRandom();
+            rawInputs = GetRawInputs();
+            validInputs = GetValidInputs(rawInputs);
+            validOutputs = GetValidOutputs();
+            validSamples = GetValidSamples();
         }
 
         #endregion
@@ -21,98 +30,100 @@ namespace FourPixCam
         internal static Sample[] GetTrainingData(int sampleSize)
         {
             return Enumerable.Range(0, sampleSize)
-                .Select(x => GetRandomSample())
+                .Select(x => GetRandomValidSample())
                 .ToArray();
         }
-        //internal static Sample[] GetTestingData()
-        //{
-
-
-        //}
+        internal static Sample[] GetTestingData()
+        {
+            return validSamples;
+        }
 
         #region helper methods
 
-        static Sample GetRandomSample()
+        static Sample[] GetValidSamples()
         {
-            var inp = GetInput();
-            var exp = GetExpectedOutput(inp);
+            var result = new List<Sample>();
 
-            return new Sample
+            // int vs Label ? .Select(x => (Label)x)?
+            var labels = Enum.GetValues(typeof(Label)).ToList<Label>().Skip(1); 
+            foreach (var label in labels)
             {
-                Input = inp,
-                ExpectedOutput = exp
+                result.Add(new Sample
+                {
+                    Label = label,
+                    Input = validInputs[label],
+                    ExpectedOutput = validOutputs[label]
+                });
+            }
+
+            return result.ToArray();
+        }
+        static Dictionary<Label, Matrix> GetRawInputs()
+        {
+            return new Dictionary<Label, Matrix>
+            {
+                [Label.AllWhite] = new Matrix(new float[,] {
+                    { 0, 0 },
+                    { 0, 0 } }),
+
+                [Label.AllBlack] = new Matrix(new float[,] {
+                    { 1, 1 },
+                    { 1, 1 } }),
+
+                [Label.TopWhite] = new Matrix(new float[,] {
+                    { 0, 0 },
+                    { 1, 1 } }),
+
+                [Label.TopBlack] = new Matrix(new float[,] {
+                    { 1, 1 },
+                    { 0, 0 } }),
+
+                [Label.LeftWhite] = new Matrix(new float[,] {
+                    { 0, 1 },
+                    { 0, 1 } }),
+
+                [Label.LeftBlack] = new Matrix(new float[,] {
+                    { 1, 0 },
+                    { 1, 0 } }),
+
+                [Label.SlashWhite] = new Matrix(new float[,] {
+                    { 1, 0 },
+                    { 0, 1 } }),
+
+                [Label.SlashBlack] = new Matrix(new float[,] {
+                    { 0, 1 },
+                    { 1, 0 } })
             };
         }
-        static Matrix GetInput()
+        static Dictionary<Label, Matrix> GetValidInputs(Dictionary<Label, Matrix> rawInputs)
         {
-            return new Matrix(new[]
-                    {
-                        (float)Math.Round(rnd.NextDouble()),
-                        (float)Math.Round(rnd.NextDouble()),
-                        (float)Math.Round(rnd.NextDouble()),
-                        (float)Math.Round(rnd.NextDouble())
-                    });
+            var test = rawInputs.ToDictionary(x => x.Key, x => Operations.ChangeIntoOneColumn(x.Value));
+            return test;
         }
-        static Matrix GetExpectedOutput(Matrix input)
+        static Dictionary<Label, Matrix> GetValidOutputs()
         {
-            return input;
+            return new Dictionary<Label, Matrix>
+            {
+                [Label.AllWhite] = new Matrix(new float[] { 1, 0, 0, 0 }),
+
+                [Label.AllBlack] = new Matrix(new float[] { 1, 0, 0, 0 }),
+
+                [Label.TopWhite] = new Matrix(new float[] { 0, 1, 0, 0 }),
+
+                [Label.TopBlack] = new Matrix(new float[] { 0, 1, 0, 0 }),
+
+                [Label.LeftWhite] = new Matrix(new float[] { 0, 0, 1, 0 }),
+
+                [Label.LeftBlack] = new Matrix(new float[] { 0, 0, 1, 0 }),
+
+                [Label.SlashWhite] = new Matrix(new float[] { 0, 0, 0, 1 }),
+
+                [Label.SlashBlack] = new Matrix(new float[] { 0, 0, 0, 1 })
+            };
         }
-        //static Dictionary<float[], string> GetExpectedResult()
-        //{
-        //    Dictionary<float[], string> result = new Dictionary<float[], string>();
-
-        //    foreach (float[] trainingSample in trainingData)
-        //    {
-        //        result[trainingSample] = GetLabel(trainingSample);
-        //    }
-
-        //    return result;
-        //}
-        static string GetLabel(float[] sample)
+        static Sample GetRandomValidSample()
         {
-            float _0 = sample[0];
-            float _1 = sample[1];
-            float _2 = sample[2];
-            float _3 = sample[3];
-
-            if (_0 == _1)
-            {
-                if (_2 == _3)
-                {
-                    if (_0 == _2)
-                    {
-                        return _0 == 0
-                            ? "AllBlack"
-                            : "AllWhite";
-                    }
-                    else
-                    {
-                        return _0 == 0
-                            ? "Black Top - White Bottom (hori)"
-                            : "White Top - Black Bottom (hori)";
-                    }
-                }
-            }
-            else if (_0 == _2)
-            {
-                if (_1 == _3)
-                {
-                    return _0 == 0
-                        ? "Black Left - White Right (vert)"
-                        : "White Left - Black Right (vert)";
-                }
-            }
-            else if (_0 == _3)
-            {
-                if (_1 == _2)
-                {
-                    return _0 == 0
-                        ? "Black TopLeft & RightBottom (diag)"
-                        : "White TopLeft & RightBottom (diag)";
-                }
-            }
-
-            return "No match.";
+            return validSamples.ElementAt(rnd.Next(0, validInputs.Count() - 1));
         }
 
         #endregion

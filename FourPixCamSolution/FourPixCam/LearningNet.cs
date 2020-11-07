@@ -1,6 +1,7 @@
 ﻿using FourPixCam.Activators;
 using FourPixCam.CostFunctions;
 using MatrixHelper;
+using System;
 using System.Linq;
 using static FourPixCam.NeurNetMath;
 
@@ -22,23 +23,14 @@ namespace FourPixCam
             this.net = net;
 
             CostType = CostType.SquaredMeanError;
-            ActivationType_OfLayer = GetActivationTypes();
 
-            z_OfLayer = new Matrix[net.L];
-            a_OfLayer = new Matrix[net.L];
+            Z = new Matrix[net.L];
+            A = new Matrix[net.L];
             dadz_OfLayer = new Matrix[net.L];
-            error_OfLayer = new Matrix[net.L];
+            E = new Matrix[net.L];
         }
 
         #region helper methods
-
-        ActivationType[] GetActivationTypes()
-        {
-            // skip activator for first "layer"
-            return Enumerable.Range(2, net.L)
-                .Select(x => ActivationType.LeakyReLU)
-                .ToArray();
-        }
 
         #endregion
 
@@ -56,18 +48,17 @@ namespace FourPixCam
         /// <summary>
         /// total value (= wa + b)
         /// </summary>
-        public Matrix[] z_OfLayer { get; set; }
+        public Matrix[] Z { get; set; }
         /// <summary>
         /// activation (= f(z))
         /// </summary>
-        public Matrix[] a_OfLayer { get; set; }
+        public Matrix[] A { get; set; }
         public Matrix[] dadz_OfLayer { get; set; }  // => Matrix.Partial(f, a);
-        public Matrix[] error_OfLayer { get; set; }
-        public Matrix[] f_OfLayer { get; set; } // => activations[]
+        public Matrix[] E { get; set; }
+        public Matrix[] F { get; set; } // => activations[]
 
         public CostType CostType { get; set; }
         public float LastCost { get; set; } // redundant?
-        ActivationType[] ActivationType_OfLayer;
 
 
         #endregion
@@ -76,19 +67,27 @@ namespace FourPixCam
 
         public Matrix FeedForwardAndGetOutput(Matrix input)
         {
-            // a[0] = input layer
-            a_OfLayer[0] = new Matrix(input.ToArray());
+            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
+            Console.WriteLine($"                                        F E E D   F O R W A R D");
+            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
+            Console.WriteLine();
+
+            // wa: Separate inp layer from 'layers' ?!
+            A[0] = input.DumpToConsole($"\nA[0] = "); //new Matrix(input.ToArray());
+            Console.WriteLine("\n    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
+
 
             // iterate over layers (skip input layer)
             for (int i = 1; i < net.L; i++)
             {
-                z_OfLayer[i] = NeurNetMath.z(net.w[i], a_OfLayer[i - 1], net.b[i]);
-                a_OfLayer[i] = NeurNetMath.a(z_OfLayer[i], ActivationType_OfLayer[i]);
+                Z[i] = NeurNetMath.z(net.W[i].DumpToConsole($"\nW{i} = "), A[i - 1].DumpToConsole($"\nA{i-1} = "), net.B[i].DumpToConsole($"\nB{i} = ")).DumpToConsole($"\nZ{i} = ");
+                A[i] = NeurNetMath.a(Z[i], net.ActivationTypes[i]).DumpToConsole($"\nA{i} = ");
+                Console.WriteLine("\n    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
             }
 
-            return a_OfLayer.Last();
+            return A.Last();
         }
-        public void BackPropagate(Matrix y)
+        public void BackPropagate(Matrix y, float learningRate)
         {
             // debug
             // var v1 = NeurNetMath.C(a_OfLayer[net.L-1], y, CostType.SquaredMeanError);
@@ -96,20 +95,26 @@ namespace FourPixCam
             // Iterate backwards over each layer (skip input layer).
             for (int l = net.L - 1; l > 0; l--)
             {
-                dadz_OfLayer[l] = NeurNetMath.dadz(z_OfLayer[l], ActivationType_OfLayer[l]);
+                dadz_OfLayer[l] = NeurNetMath.dadz(Z[l], net.ActivationTypes[l]);
                 Matrix error;
 
                 if (l == net.L - 1)
                 {
                     // .. and C0 instead of a[i] and t as parameters here?
-                    error = NeurNetMath.deltaOfOutputLayer(a_OfLayer[l], y, CostType.SquaredMeanError, dadz_OfLayer[l]);
+                    error = NeurNetMath.deltaOfOutputLayer(A[l], y, CostType.SquaredMeanError, dadz_OfLayer[l]);
                 }
                 else
                 {
-                    error = NeurNetMath.deltaOfHiddenLayer(net.w[l + 1], error_OfLayer[l + 1], dadz_OfLayer[l]);
+                    error = NeurNetMath.deltaOfHiddenLayer(net.W[l + 1], E[l + 1], dadz_OfLayer[l]);
                 }
 
-                error_OfLayer[l] = error;
+                E[l] = error;
+            }
+
+            // Adjust weights and biases.
+            for (int l = 0; l < net.L - 1; l++)
+            {
+                net.W[l] = GetCorrectedMatrix(net.W[l], A[l-1], E[l], learningRate);
             }
         }
 

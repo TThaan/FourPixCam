@@ -1,5 +1,6 @@
 ﻿using FourPixCam.Activators;
 using FourPixCam.CostFunctions;
+using FourPixCam.Enums;
 using MatrixHelper;
 using System;
 using static MatrixHelper.Operations;
@@ -11,10 +12,6 @@ namespace FourPixCam
 
     public class NeurNetMath
     {
-        public enum ActivationType
-        {
-            Undefined, LeakyReLU, NullActivator, Sigmoid, SoftMax
-        }
         public enum CostType
         {
             Undefined, SquaredMeanError
@@ -29,11 +26,13 @@ namespace FourPixCam
             switch (activationType)
             {
                 case ActivationType.Undefined:
-                    throw new System.ArgumentException("Undefined activator function");
+                    throw new ArgumentException("Undefined activator function");
                 case ActivationType.LeakyReLU:
                     return LeakyReLU.a(z);
                 case ActivationType.NullActivator:
                     return NullActivator.a(z);
+                case ActivationType.ReLU:
+                    return ReLU.a(z);
                 case ActivationType.Sigmoid:
                     return Sigmoid.a(z);
                 case ActivationType.SoftMax:
@@ -52,6 +51,8 @@ namespace FourPixCam
                     return LeakyReLU.dadz(z);
                 case ActivationType.NullActivator:
                     return NullActivator.dadz(z);
+                case ActivationType.ReLU:
+                    return ReLU.dadz(z);
                 case ActivationType.Sigmoid:
                     return Sigmoid.dadz(z);
                 case ActivationType.SoftMax:
@@ -95,5 +96,31 @@ namespace FourPixCam
             Matrix tmp = ScalarProduct(wTranspose, error);
             return HadamardProduct(tmp, dadz);
         }
+        public static Matrix GetCorrectedMatrix(Matrix matrix, Matrix a, Matrix e, float learningRate)
+        {
+            // = dCda*dadz*dzdw = error^L * a^(L-1) ??
+            Matrix dCdw = HadamardProduct(e, a);
+            return matrix - learningRate * dCdw;
+        }
+        //public static Matrix[] GetCorrectedWeights(Matrix[] w_ofLayer, Matrix[] error_ofLayer, float learningRate)
+        //{
+        //    Matrix[] result = new Matrix[w_ofLayer.Length];
+
+        //    for (int l = 0; l < w_ofLayer.Length; l++)
+        //    {
+        //        Matrix currentLayer = new Matrix(w_ofLayer)
+        //        for (int j = 0; j < w_ofLayer.m; j++)
+        //        {
+        //            for (int k = 0; k < w_ofLayer.n; k++)
+        //            {
+        //                // = dCda*dadz*dzdw = error^L * a^(L-1) ??
+        //                float dCdw =
+        //                w_ofLayer[j, k] = w_ofLayer[j, k] - learningRate *
+        //            }
+        //        }
+        //    }
+
+        //    return result;
+        //}
     }
 }

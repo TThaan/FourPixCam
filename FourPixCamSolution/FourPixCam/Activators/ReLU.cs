@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace FourPixCam.Activators
 {
-    public class LeakyReLU
+    public class ReLU
     {
         /// <summary>
         /// Activation ('squashing') function of the weighted input z.
@@ -12,7 +12,7 @@ namespace FourPixCam.Activators
         {
             return z >= 0
                 ? z
-                : z / 100;
+                : 0;
         }
         /// <summary>
         /// Activation ('squashing') function of the weighted input z.
@@ -20,7 +20,7 @@ namespace FourPixCam.Activators
         public static Matrix a(Matrix z)
         {
             return new Matrix(
-                z.Select(x => x >= 0f ? x : x/100)
+                z.Select(x => x >= 0f ? x : 0)
                 .ToArray());
         }
         /// <summary>
@@ -29,8 +29,8 @@ namespace FourPixCam.Activators
         public static float dadz(float z)
         {
             return z >= 0
-                ? 1f
-                : 1f / 100;
+                ? 1
+                : 0;
         }
         /// <summary>
         /// Derivation of the activation ('squashing') function with respect to the weighted input z.
@@ -38,8 +38,8 @@ namespace FourPixCam.Activators
         public static Matrix dadz(Matrix z)
         {
             return new Matrix(
-                z.Select(x => x >= 0f ? 1f : 1f / 100)
-                .ToArray()); 
+                z.Select(x => x >= 0f ? 1f : 0)
+                .ToArray());
         }
     }
 }
