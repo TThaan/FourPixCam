@@ -6,7 +6,7 @@ namespace FourPixCam.Activators
     public class ReLU
     {
         /// <summary>
-        /// Activation ('squashing') function of the weighted input z.
+        /// Activation ('squashing') function of any weighted input z.
         /// </summary>
         public static float a(float z)
         {
@@ -15,7 +15,16 @@ namespace FourPixCam.Activators
                 : 0;
         }
         /// <summary>
-        /// Activation ('squashing') function of the weighted input z.
+        /// Activation ('squashing') function of the weighted input z_j.
+        /// </summary>
+        //public static float a_j(Matrix z, int j)
+        //{
+        //    return z[j,0] >= 0
+        //        ? z[j, 0]
+        //        : 0;
+        //}
+        /// <summary>
+        /// Activation ('squashing') function of the weighted input matrix z.
         /// </summary>
         public static Matrix a(Matrix z)
         {
@@ -24,7 +33,7 @@ namespace FourPixCam.Activators
                 .ToArray());
         }
         /// <summary>
-        /// Derivation of the activation ('squashing') function with respect to the weighted input z.
+        /// Derivation of the activation ('squashing') function with respect to any weighted input z.
         /// </summary>
         public static float dadz(float z)
         {
@@ -32,6 +41,15 @@ namespace FourPixCam.Activators
                 ? 1
                 : 0;
         }
+        /// <summary>
+        /// Derivation of the activation ('squashing') function with respect to the weighted input z_j.
+        /// </summary>
+        //public static float dadz_j(Matrix z, int j)
+        //{
+        //    return z[j,0] >= 0
+        //        ? 1
+        //        : 0;
+        //}
         /// <summary>
         /// Derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>

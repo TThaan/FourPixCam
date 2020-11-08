@@ -81,7 +81,7 @@ namespace FourPixCam
 
                 for (int j = 0; j < layers[l]; j++)
                 {
-                    biasesOfThisLayer[j, 0] = biasRange / 2 * GetRandom10th();// * GetSmallRandomNumber();
+                    biasesOfThisLayer[j, 0] = biasRange / 2;
                 };
 
                 result[l] = biasesOfThisLayer;   // wa: result[0]?

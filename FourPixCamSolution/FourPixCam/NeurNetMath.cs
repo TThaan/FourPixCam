@@ -68,7 +68,7 @@ namespace FourPixCam
                 case CostType.Undefined:
                     throw new ArgumentException("Undefined cost function");
                 case CostType.SquaredMeanError:
-                    return SquaredMeanError.C(a, t);
+                    return SquaredMeanError.E(a, t);
                 default:
                     throw new ArgumentException("Undefined cost function");
             }
@@ -80,7 +80,19 @@ namespace FourPixCam
                 case CostType.Undefined:
                     throw new ArgumentException("Undefined cost function");
                 case CostType.SquaredMeanError:
-                    return SquaredMeanError.CTotal(a, t);
+                    return SquaredMeanError.ETotal(a, t);
+                default:
+                    throw new ArgumentException("Undefined cost function");
+            }
+        }
+        public static float dCda(float a, float t, CostType costType)
+        {
+            switch (costType)
+            {
+                case CostType.Undefined:
+                    throw new ArgumentException("Undefined cost function");
+                case CostType.SquaredMeanError:
+                    return SquaredMeanError.dEda(a, t);
                 default:
                     throw new ArgumentException("Undefined cost function");
             }
@@ -92,15 +104,27 @@ namespace FourPixCam
                 case CostType.Undefined:
                     throw new ArgumentException("Undefined cost function");
                 case CostType.SquaredMeanError:
-                    return SquaredMeanError.dCda(a, t);
+                    return SquaredMeanError.dEda(a, t);
                 default:
                     throw new ArgumentException("Undefined cost function");
             }
         }
         public static Matrix deltaOfOutputLayer(Matrix a, Matrix t, CostType costType, Matrix dadz)
         {
-            return HadamardProduct(dCda(a, t, costType), dadz);
+            Matrix result = new Matrix(a.m, 1);
+
+            for (int j = 0; j < a.m; j++)
+            {
+                result[j, 0] = dCda(a[j, 0], t[j, 0], costType) * dadz[j, 0];
+            }
+            var check = HadamardProduct(dCda(a, t, costType), dadz);
+
+            return result;
         }
+        //public static Matrix deltaOfOutputLayer(Matrix a, Matrix t, CostType costType, Matrix dadz)
+        //{
+        //    return HadamardProduct(dCda(a, t, costType), dadz);
+        //}
         public static Matrix deltaOfHiddenLayer(Matrix w, Matrix error, Matrix dadz)
         {
             Matrix wTranspose = w.GetTranspose();
