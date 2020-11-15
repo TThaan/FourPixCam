@@ -1,57 +1,23 @@
-﻿using MatrixHelper;
-using System;
-using System.Linq;
-
-namespace FourPixCam.CostFunctions
+﻿namespace FourPixCam.CostFunctions
 {
+    /// <summary>
+    /// Only (elements`) function & derivative should be in here,
+    /// no matrix operations!?! Those belong to NeurNetMath.
+    /// </summary>
     class SquaredMeanError
     {
         /// <summary>
-        /// Error/Cost/Loss Matrix
+        /// Cost/Error/Loss function of a single output neuron a.
         /// </summary>
-        public static Matrix E(Matrix a, Matrix t)
-        {
-            if (a.n != 1 || t.n != 1)
-            {
-                throw new ArgumentException("The output matrix a as well as the expected-output matrix can only have one column.");
-            }
-            Matrix gap = t - a;
-            var tmp = .5f * Operations.HadamardProduct(gap, gap);   // Overloaded method in MatrixHelper for hadamard-square?
-            return tmp;
-        }
-        /// <summary>
-        /// Half the squared difference between expected and actual output.
-        /// </summary>
-        public static float E(float a, float t)
+        public static float CostFunction(float a, float t)
         {
             return 0.5f * (t-a) * (t - a);
         }
         /// <summary>
-        /// Half the squared difference between expected and actual output.
+        /// Partial derivative of the cost with respect to a single output neuron a.
         /// </summary>
-        public static float ETotal(Matrix a, Matrix t)
+        public static float DerivationOfCostFunction(float a, float t)
         {
-            // ETotal = Sum or Sum divided by a.m?
-            return E(a, t).Sum()/a.m;
-        }
-        /// <summary>
-        /// Partial derivative of the cost
-        /// with regards to the output, i.e. a^L.
-        /// </summary>
-        public static float dEda(float a, float t)
-        {
-            return a - t;
-        }
-        /// <summary>
-        /// Partial derivative of the cost
-        /// with regards to the output, i.e. a^L.
-        /// </summary>
-        public static Matrix dEda(Matrix a, Matrix t)
-        {
-            if (a.n != 1 || t.n != 1)
-            {
-                throw new ArgumentException("The output matrix a as well as the expected-output matrix can only have one column.");
-            }
             return a - t;
         }
     }

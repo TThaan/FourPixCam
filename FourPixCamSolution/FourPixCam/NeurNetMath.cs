@@ -1,159 +1,119 @@
-﻿using FourPixCam.Activators;
-using FourPixCam.CostFunctions;
-using FourPixCam.Enums;
-using MatrixHelper;
+﻿using MatrixHelper;
 using System;
+using System.Linq;
 using static MatrixHelper.Operations;
 
 namespace FourPixCam
 {
+    // Exchange activation type parameters with funcs!?
+
     // wa: not static but as idisp-instance for each back-prop
     // including stored arrays '..ofLayer[l]'?
 
     public class NeurNetMath
     {
+        // redundant?
         public enum CostType
         {
             Undefined, SquaredMeanError
         }
 
-        public static Matrix z(Matrix w, Matrix a, Matrix b)
+        /// <summary>
+        /// Weighted input z=wa+b.
+        /// </summary>
+        public static Matrix Get_z(Matrix w, Matrix a, Matrix b)
         {
             return ScalarProduct(w, a) + b;
         }
-        public static Matrix a(Matrix z, ActivationType activationType)
+        /// <summary>
+        /// Activation function of the weighted input a=f(z).
+        /// </summary>
+        public static Matrix Get_a(Matrix z, Func<float, float> activation)
         {
-            switch (activationType)
+            Matrix result = new Matrix(z.m);
+
+            for (int j = 0; j < z.m; j++)
             {
-                case ActivationType.Undefined:
-                    throw new ArgumentException("Undefined activator function");
-                case ActivationType.LeakyReLU:
-                    return LeakyReLU.a(z);
-                case ActivationType.NullActivator:
-                    return NullActivator.a(z);
-                case ActivationType.ReLU:
-                    return ReLU.a(z);
-                case ActivationType.Sigmoid:
-                    return Sigmoid.a(z);
-                case ActivationType.SoftMax:
-                    return SoftMax.a(z);
-                default:
-                    throw new System.ArgumentException("Undefined activator function");
+                result[j] = activation(z[j]);
             }
+
+            return result;
         }
-        public static Matrix dadz(Matrix z, ActivationType activationType)
+        /// <summary>
+        /// Partial derivation of a with respect to z.
+        /// </summary>
+        public static Matrix Get_dadz(Matrix a, Matrix z, Func<float, float, float> derivationOfActivation)
         {
-            switch (activationType)
-            {
-                case ActivationType.Undefined:
-                    throw new ArgumentException("Undefined activator function");
-                case ActivationType.LeakyReLU:
-                    return LeakyReLU.dadz(z);
-                case ActivationType.NullActivator:
-                    return NullActivator.dadz(z);
-                case ActivationType.ReLU:
-                    return ReLU.dadz(z);
-                case ActivationType.Sigmoid:
-                    return Sigmoid.dadz(z);
-                case ActivationType.SoftMax:
-                    return SoftMax.dadz(z);
-                default:
-                    throw new ArgumentException("Undefined activator function");
-            }
+            return Partial(a, z, derivationOfActivation);
         }
-        public static Matrix C(Matrix a, Matrix t, CostType costType)
+        public static Matrix Get_C(Matrix a, Matrix t, Func<float, float, float> c_j)
         {
-            switch (costType)
-            {
-                case CostType.Undefined:
-                    throw new ArgumentException("Undefined cost function");
-                case CostType.SquaredMeanError:
-                    return SquaredMeanError.E(a, t);
-                default:
-                    throw new ArgumentException("Undefined cost function");
-            }
-        }
-        public static float CTotal(Matrix a, Matrix t, CostType costType)
-        {
-            switch (costType)
-            {
-                case CostType.Undefined:
-                    throw new ArgumentException("Undefined cost function");
-                case CostType.SquaredMeanError:
-                    return SquaredMeanError.ETotal(a, t);
-                default:
-                    throw new ArgumentException("Undefined cost function");
-            }
-        }
-        public static float dCda(float a, float t, CostType costType)
-        {
-            switch (costType)
-            {
-                case CostType.Undefined:
-                    throw new ArgumentException("Undefined cost function");
-                case CostType.SquaredMeanError:
-                    return SquaredMeanError.dEda(a, t);
-                default:
-                    throw new ArgumentException("Undefined cost function");
-            }
-        }
-        public static Matrix dCda(Matrix a, Matrix t, CostType costType)
-        {
-            switch (costType)
-            {
-                case CostType.Undefined:
-                    throw new ArgumentException("Undefined cost function");
-                case CostType.SquaredMeanError:
-                    return SquaredMeanError.dEda(a, t);
-                default:
-                    throw new ArgumentException("Undefined cost function");
-            }
-        }
-        public static Matrix deltaOfOutputLayer(Matrix a, Matrix t, CostType costType, Matrix dadz)
-        {
-            Matrix result = new Matrix(a.m, 1);
+            Matrix result = new Matrix(a.m);
 
             for (int j = 0; j < a.m; j++)
             {
-                result[j, 0] = dCda(a[j, 0], t[j, 0], costType) * dadz[j, 0];
+                result[j] = c_j(a[j], t[j]);
             }
-            var check = HadamardProduct(dCda(a, t, costType), dadz);
 
             return result;
         }
-        //public static Matrix deltaOfOutputLayer(Matrix a, Matrix t, CostType costType, Matrix dadz)
-        //{
-        //    return HadamardProduct(dCda(a, t, costType), dadz);
-        //}
-        public static Matrix deltaOfHiddenLayer(Matrix w, Matrix error, Matrix dadz)
+        public static float Get_CTotal(Matrix a, Matrix t, Func<float, float, float> c0)
         {
-            Matrix wTranspose = w.GetTranspose();
-            // rename tmp
-            Matrix tmp = ScalarProduct(wTranspose, error);
-            return HadamardProduct(tmp, dadz);
+            // CTotal = total or averaged (i.e. sum divided by a.m)?
+            return Get_C(a, t, c0).Sum();
         }
-        public static Matrix GetCorrectedWeights(Matrix w, Matrix a, Matrix e, float learningRate)
+        /// <summary>
+        /// = delta * w
+        /// </summary>
+        /// <returns></returns>
+        public static Matrix Get_dCda(float C, Matrix a, Func<float, float, float> derivationOfActivation)
         {
-            // = dCda*dadz*dzdw = error^L * a^(L-1) ??
+            Matrix result = a.Transpose;
 
-
-            // Matrix dCdw = HadamardProduct(e, a);
-            // return w - learningRate * dCdw;
-
-            Matrix result = new Matrix(w.m, w.n);
-            for (int j = 0; j < w.m; j++)
+            for (int j = 0; j < a.m; j++)
             {
-                for (int k = 0; k < w.n; k++)
-                {
-                    result[j, k] = w[j, k] - a[k, 0] * e[j, 0];
-                }
+                result[1] = derivationOfActivation(C, a[1]);
             }
 
             return result;
         }
-        public static Matrix GetCorrectedBiases(Matrix b, Matrix e, float learningRate)
+        /// <param name="a">L</param>
+        /// <param name="z">L</param>
+        public static Matrix Get_deltaOutput(
+            Matrix a, Matrix t, Func<float, float, float> dCdaFunction, 
+            Matrix z, Func<float, float> dadzFunction)
         {
-            return b - learningRate * e;
+            Matrix result = new Matrix(a.m);
+
+            for (int j = 0; j < a.m; j++)
+            {
+                result[j] = dCdaFunction(a[j], t[j]) * dadzFunction(z[j]);
+            }
+
+            return result;
+        }
+        /// <param name="w">l+1</param>
+        /// <param name="delta">l+1</param>
+        /// <param name="z">l</param>
+        public static Matrix Get_deltaHidden(Matrix w, Matrix delta, Matrix z, Func<float, float> dadzFunction)
+        {
+            Matrix dCda = w.Transpose * delta;
+            Matrix dadz = new Matrix(z.Select(x => dadzFunction(x)).ToArray());
+
+            return HadamardProduct(dCda, dadz);
+        }
+        /// <param name="w">l</param>
+        /// <param name="delta">l</param>
+        /// <param name="a">l-1</param>
+        public static Matrix Get_CorrectedWeights(Matrix w, Matrix delta, Matrix a, float learningRate)
+        {
+            return w - learningRate * (delta*a.Transpose);
+        }
+        /// <param name="b">l</param>
+        /// <param name="delta">l</param>
+        public static Matrix Get_CorrectedBiases(Matrix b, Matrix delta, float learningRate)
+        {
+            return b - learningRate * delta.Transpose;
         }
     }
 }

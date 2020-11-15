@@ -1,5 +1,4 @@
-﻿using FourPixCam.Activators;
-using FourPixCam.CostFunctions;
+﻿using FourPixCam.CostFunctions;
 using MatrixHelper;
 using System;
 using System.Linq;
@@ -24,10 +23,10 @@ namespace FourPixCam
 
             CostType = CostType.SquaredMeanError;
 
-            Z = new Matrix[net.L];
-            A = new Matrix[net.L];
-            dadz_OfLayer = new Matrix[net.L];
-            Delta = new Matrix[net.L];
+            Z = new Matrix[net.LayerCount];
+            A = new Matrix[net.LayerCount];
+            dadz_OfLayer = new Matrix[net.LayerCount];
+            Delta = new Matrix[net.LayerCount];
         }
 
         #region helper methods
@@ -67,10 +66,7 @@ namespace FourPixCam
 
         public Matrix FeedForwardAndGetOutput(Matrix input)
         {
-            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
-            Console.WriteLine($"                                        F E E D   F O R W A R D");
-            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
-            Console.WriteLine();
+            $"F E E D   F O R W A R D".WriteDumpingTitle();
 
             // wa: Separate inp layer from 'layers' ?!
             A[0] = input.DumpToConsole($"\nA[0] = "); //new Matrix(input.ToArray());
@@ -78,10 +74,10 @@ namespace FourPixCam
 
 
             // iterate over layers (skip input layer)
-            for (int i = 1; i < net.L; i++)
+            for (int i = 1; i < net.LayerCount; i++)
             {
-                Z[i] = NeurNetMath.z(net.W[i].DumpToConsole($"\nW{i} = "), A[i - 1].DumpToConsole($"\nA{i-1} = "), net.B[i].DumpToConsole($"\nB{i} = ")).DumpToConsole($"\nZ{i} = ");
-                A[i] = NeurNetMath.a(Z[i], net.ActivationTypes[i]).DumpToConsole($"\nA{i} = ");
+                Z[i] = NeurNetMath.Get_z(net.W[i].DumpToConsole($"\nW{i} = "), A[i - 1].DumpToConsole($"\nA{i-1} = "), net.B[i].DumpToConsole($"\nB{i} = ")).DumpToConsole($"\nZ{i} = ");
+                A[i] = NeurNetMath.Get_a(Z[i], net.ActivationDerivations[i]).DumpToConsole($"\nA{i} = ");
                 Console.WriteLine("\n    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
             }
 
@@ -89,45 +85,39 @@ namespace FourPixCam
         }
         public void BackPropagate(Matrix y, float learningRate)
         {
-            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
-            Console.WriteLine($"                                        B A C K P R O P A P A G A T I O N");
-            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
-            Console.WriteLine();
+            $"B A C K P R O P A P A G A T I O N".WriteDumpingTitle();
 
             // debug
-            var c = NeurNetMath.C(A[net.L - 1], y, CostType.SquaredMeanError)
+            var c = NeurNetMath.Get_C(A[net.LayerCount - 1], y, SquaredMeanError.CostFunction)
                 .DumpToConsole($"\n{CostType.SquaredMeanError} C =");
-            var cTotal = NeurNetMath.CTotal(A[net.L - 1], y, CostType.SquaredMeanError);
+            var cTotal = NeurNetMath.Get_CTotal(A[net.LayerCount - 1], y, SquaredMeanError.CostFunction);
             Console.WriteLine($"\nCTotal = {cTotal}\n");
 
-            // Iterate backwards over each layer (skip input layer).
-            for (int l = net.L - 1; l > 0; l--)
-            {
-                dadz_OfLayer[l] = NeurNetMath.dadz(Z[l], net.ActivationTypes[l])
-                    .DumpToConsole($"\ndadz{l} =");
-                Matrix error;
+            Matrix[] nextW = new Matrix[net.LayerCount];
+            Matrix[] nextB = new Matrix[net.LayerCount];
 
-                if (l == net.L - 1)
+            // Iterate backwards over each layer (skip input layer).
+            for (int l = net.LayerCount - 1; l > 0; l--)
+            {
+                dadz_OfLayer[l] = NeurNetMath.Get_dadz(A[l], Z[l], net.CostDerivations[l])
+                    .DumpToConsole($"\ndadz{l} =");
+                Matrix delta;
+
+                if (l == net.LayerCount - 1)
                 {
                     // .. and C0 instead of a[i] and t as parameters here?
-                    error = NeurNetMath.deltaOfOutputLayer(A[l], y, CostType.SquaredMeanError, dadz_OfLayer[l]);
+                    delta = NeurNetMath.Get_deltaOutput(A[l], t, net.CostDerivations[l], Z[l], net.ActivationDerivations[l]); //
                 }
                 else
                 {
-                    error = NeurNetMath.deltaOfHiddenLayer(net.W[l + 1], Delta[l + 1], dadz_OfLayer[l]);
+                    delta = NeurNetMath.Get_deltaHidden(net.W[l + 1], Delta[l + 1], Z[l], net.ActivationDerivations[l]);//, A[l]
                 }
 
-                Delta[l] = error.DumpToConsole($"\ndelta{l} =");
-            }
-
-            // Adjust weights and biases (skip input layer).
-            for (int l = 1; l < net.L; l++)
-            {
-                // E or delta ?
-                net.W[l] = GetCorrectedWeights(net.W[l], A[l-1], Delta[l], learningRate)
-                        .DumpToConsole($"\nadjusted w{l} =");
-                net.B[l] = GetCorrectedWeights(net.B[l], A[l - 1], Delta[l], learningRate)
-                        .DumpToConsole($"\nadjusted b{l} =");
+                Delta[l] = delta.DumpToConsole($"\ndelta{l} =");
+                nextW[l] = Get_CorrectedWeights(net.W[l], A[l - 1], Delta[l], learningRate)
+                    .DumpToConsole($"\nnextW{l} =");
+                nextB[l] = Get_CorrectedWeights(net.B[l], A[l - 1], Delta[l], learningRate)
+                    .DumpToConsole($"\nnextB{l} =");
             }
         }
 

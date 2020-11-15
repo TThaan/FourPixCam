@@ -29,7 +29,7 @@ namespace FourPixCam.Activators
             throw new NotImplementedException();
         }
         /// <summary>
-        /// Derivation of the activation ('squashing') function with respect to the weighted input z.
+        /// Partial derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>
         public static Matrix dadz(Matrix z)
         {

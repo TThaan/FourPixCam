@@ -52,13 +52,13 @@ namespace FourPixCam
             Console.WriteLine($"                                    BiasRange       : {net.BiasRange}");
             Console.WriteLine();
 
-            for (int i = 0; i < net.L; i++)
+            for (int i = 0; i < net.LayerCount; i++)
             {
                 //Console.WriteLine($"    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   \n");
                 Console.WriteLine($"\n                                            L a y e r  {i}");
                 Console.WriteLine($"                                  - - - - - - - - - - - - - - - -\n");
                 Console.WriteLine($"                                    Neurons   : {net.NeuronsPerLayer[i]}");
-                Console.WriteLine($"                                    Activator : {net.ActivationTypes[i]}");
+                Console.WriteLine($"                                    Activator : {net.ActivationDerivations[i]}");
 
                 Matrix w = net.W[i];
                 if (w != null)
@@ -104,6 +104,30 @@ namespace FourPixCam
             writer.Write(o);
             result = writer.ToString();
             return o;
+        }
+
+
+
+        public static void WriteDumpingTitle(this string title, params object[] objects)
+        {
+            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
+            Console.WriteLine($"                                         {title}");
+            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
+            Console.WriteLine();
+
+            foreach (var o in objects)
+            {
+                string s;
+                try
+                {
+                    s = (string)o;
+                }
+                catch (Exception)
+                {
+                    s = o.ToString();
+                }
+                Console.WriteLine($"                                    {nameof(o)}   : {s}");
+            }
         }
     }
 }

@@ -1,6 +1,5 @@
 ﻿using MatrixHelper;
 using System;
-using System.Linq;
 
 namespace FourPixCam
 {
@@ -19,18 +18,18 @@ namespace FourPixCam
 
         bool IsOutputApproximatelyCorrect(Matrix output)
         {
-            if (output.m == ExpectedOutput.m && output.n == 0 && ExpectedOutput.n == 0)
+            if (output.m == ExpectedOutput.m && output.n == 1 && ExpectedOutput.n == 1)
             {
                 for (int j = 0; j < output.m; j++)
                 {
-                    if (ExpectedOutput[j, 0] == 0)
+                    if (ExpectedOutput[j] == 0)
                     {
-                        var x = output[j, 0];
+                        var x = output[j];
                         return x < 0.1;
                     }
-                    else if (ExpectedOutput[j, 0] == 1)
+                    else if (ExpectedOutput[j] == 1)
                     {
-                        var x = output[j, 0];
+                        var x = output[j];
                         return x >= 0.1;
                     }
                     else

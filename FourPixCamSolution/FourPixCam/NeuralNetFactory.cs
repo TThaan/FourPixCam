@@ -1,7 +1,6 @@
-﻿using FourPixCam.Enums;
+﻿using FourPixCam.Activators;
 using MatrixHelper;
 using System;
-using System.Linq;
 
 namespace FourPixCam
 {
@@ -29,14 +28,14 @@ namespace FourPixCam
             var result = new NeuralNet()
             {
                 NeuronsPerLayer = layers,
-                L = layers.Length,
+                LayerCount = layers.Length,
 
                 WeightRange = weightRange,
                 BiasRange = biasRange,
 
                 W = GetWeights(layers, weightRange),
                 B = GetBiases(layers, biasRange),
-                ActivationTypes = GetActivationTypes("Implement jsonSource later!")
+                ActivationDerivations = GetActivations("Implement jsonSource later!"),
             };
 
             return result;
@@ -77,11 +76,11 @@ namespace FourPixCam
             // Iterate over layers (skip first layer).
             for (int l = 1; l < result.Length; l++)
             {
-                Matrix biasesOfThisLayer = new Matrix(layers[l], 1);
+                Matrix biasesOfThisLayer = new Matrix(layers[l]);
 
                 for (int j = 0; j < layers[l]; j++)
                 {
-                    biasesOfThisLayer[j, 0] = biasRange / 2;
+                    biasesOfThisLayer[j] = biasRange / 2;
                 };
 
                 result[l] = biasesOfThisLayer;   // wa: result[0]?
@@ -96,18 +95,18 @@ namespace FourPixCam
         {
             return (float)(.0009 * rnd.NextDouble() + .0001) * (rnd.Next(2) == 0 ? -1 : 1);
         }
-        static ActivationType[] GetActivationTypes(string jsonSource)
+        static Func<float, float>[] GetActivations(string jsonSource)
         {
 
             // Get from jsonSource later.
 
-            return new[]
+            return new Func<float, float>[]
             {
-                ActivationType.Undefined,   // Skip activator for first "layer".
-                ActivationType.Sigmoid,
-                ActivationType.Sigmoid,
-                ActivationType.ReLU,        // Try LeakyReLU here.
-                ActivationType.ReLU
+                default,   // Skip activator for first "layer".
+                Sigmoid.a,
+                Sigmoid.a,
+                ReLU.a, // Try LeakyReLU here.
+                ReLU.a
             };
         }
         static float GetRandom10th()

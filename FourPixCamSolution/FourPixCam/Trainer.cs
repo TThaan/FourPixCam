@@ -4,10 +4,6 @@ using System.Linq;
 
 namespace FourPixCam
 {
-    /// <summary>
-    /// 1st: Binary/Dichotom input
-    /// 2nd: grey scales
-    /// </summary>
     public class Trainer
     {
         #region ctor & fields
@@ -38,12 +34,7 @@ namespace FourPixCam
         {
             for (int epoch = 0; epoch < epochs; epoch++)
             {
-                Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
-                Console.WriteLine($"                                         T R A I N I N G");
-                Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
-                Console.WriteLine();
-                Console.WriteLine($"                                    Learning Rate   : {learningRate}");
-                Console.WriteLine($"                                    Epoch           : {epoch}/{epochs}\n");
+                $"T R A I N I N G".WriteDumpingTitle(learningRate, epoch, epochs);
 
                 currentAccuracy = TrainEpoch(trainingData, testingData, learningRate);
                 learningRate *= .9f;   // This help to avoids oscillation as our accuracy improves.

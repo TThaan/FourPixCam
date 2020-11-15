@@ -33,13 +33,13 @@ namespace FourPixCam.Activators
                 : 1f / 100;
         }
         /// <summary>
-        /// Derivation of the activation ('squashing') function with respect to the weighted input z.
+        /// Partial derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>
         public static Matrix dadz(Matrix z)
         {
             return new Matrix(
-                z.Select(x => x >= 0f ? 1f : 1f / 100)
-                .ToArray()); 
+                z.Select(x => x >= 0f ? 1f : 1f / 100).ToArray())
+                .Transpose; ; 
         }
     }
 }

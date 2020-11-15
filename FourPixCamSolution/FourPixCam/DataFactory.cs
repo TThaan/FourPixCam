@@ -1,5 +1,4 @@
-﻿using FourPixCam.Enums;
-using MatrixHelper;
+﻿using MatrixHelper;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -97,7 +96,7 @@ namespace FourPixCam
         }
         static Dictionary<Label, Matrix> GetValidInputs(Dictionary<Label, Matrix> rawInputs)
         {
-            var test = rawInputs.ToDictionary(x => x.Key, x => Operations.ChangeIntoOneColumn(x.Value));
+            var test = rawInputs.ToDictionary(x => x.Key, x => Operations.FlattenToOneColumn(x.Value));
             return test;
         }
         static Dictionary<Label, Matrix> GetValidOutputs()
