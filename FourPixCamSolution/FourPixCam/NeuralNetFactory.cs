@@ -23,19 +23,21 @@ namespace FourPixCam
             // Get from jsonSource later.
 
             var layers = new[] { 4, 4, 4, 8, 4 };
-            float weightRange = 2;
-            float biasRange = .1f;
+            int weightMin = -1;
+            int weightMax = 1;
+            int biasMin = -2;
+            int biasMax = 2;
 
             var result = new NeuralNet()
             {
                 NeuronsPerLayer = layers,
                 LayerCount = layers.Length,
-
-                WeightRange = weightRange,
-                BiasRange = biasRange,
-
-                W = GetWeights(layers, weightRange),
-                B = GetBiases(layers, biasRange),
+                WeightMin = weightMin,
+                WeightMax = weightMax,
+                BiasMin = biasMin,
+                BiasMax = biasMax,
+                W = GetWeights(layers, weightMin, weightMax),
+                B = GetBiases(layers, biasMin, biasMax),
                 Activations = GetActivations("Implement jsonSource later!"),
                 ActivationDerivations = GetActivationDerivations("Implement jsonSource later!"),
                 CostDerivation = GetCostDerivation("Implement jsonSource later!")
@@ -46,7 +48,7 @@ namespace FourPixCam
 
         #region helpers
 
-        static Matrix[] GetWeights(int[] layers, float weightRange)
+        static Matrix[] GetWeights(int[] layers, int weightMin, int weightMax)
         {
             Matrix[] result = new Matrix[layers.Length];
 
@@ -59,11 +61,7 @@ namespace FourPixCam
                 {
                     for (int k = 0; k < layers[l - 1]; k++)
                     {
-                        // The entry in the j-th row and k-th colum is w^l_jk
-                        // i.e. the weight connecting
-                        // from the k-th neuron of layer l-1
-                        // to the jth neuron of layer l.
-                        weightsOfThisLayer[j, k] = weightRange / 2 * GetRandom10th();// * GetSmallRandomNumber();
+                        weightsOfThisLayer[j, k] = GetRandom10th(weightMin + (weightMax - weightMin) * rnd.NextDouble());// * GetSmallRandomNumber();
                     }
                 };
 
@@ -72,7 +70,7 @@ namespace FourPixCam
 
             return result;
         }
-        static Matrix[] GetBiases(int[] layers, float biasRange)
+        static Matrix[] GetBiases(int[] layers, int biasMin, int biasMax)
         {
             Matrix[] result = new Matrix[layers.Length];
 
@@ -83,7 +81,8 @@ namespace FourPixCam
 
                 for (int j = 0; j < layers[l]; j++)
                 {
-                    biasesOfThisLayer[j] = biasRange / 2;
+                    var x = GetRandom10th(biasMin + (biasMax - biasMin) * rnd.NextDouble());
+                    biasesOfThisLayer[j] = x;
                 };
 
                 result[l] = biasesOfThisLayer;   // wa: result[0]?
@@ -130,10 +129,12 @@ namespace FourPixCam
 
             return  SquaredMeanError.DerivationOfCostFunction;
         }
-        static float GetRandom10th()
+        static float GetRandom10th(double x)
         {
-            var x = (rnd.NextDouble() + .1f);
-            return (float)Math.Round(x <= .9 ? x : .9, 1);
+            double ratio = (rnd.NextDouble() + .1f);
+            //var y = (float)Math.Round(ratio <= .9 ? ratio : .9, 1);
+
+            return (float)Math.Round(ratio * x, 1);    //rnd.Next(0,2) == 0 ? y : -y
         }
 
         #endregion

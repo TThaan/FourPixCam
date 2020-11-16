@@ -6,6 +6,7 @@ namespace FourPixCam
     public class Sample
     {
         public Label Label { get; set; }
+        public Matrix RawInput;
         public Matrix Input;
         public Matrix ExpectedOutput;
         // public Matrix ActualOutput { get; set; }

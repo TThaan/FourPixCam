@@ -34,7 +34,10 @@ namespace FourPixCam
         {
             for (int epoch = 0; epoch < epochs; epoch++)
             {
-                $"T R A I N I N G".WriteDumpingTitle(learningRate, epoch, epochs);
+                $"T R A I N I N G".WriteDumpingTitle(
+                    nameof(learningRate), learningRate,
+                    nameof(epoch), epoch,
+                    nameof(epochs), epochs);
 
                 currentAccuracy = TrainEpoch(trainingData, testingData, learningRate);
                 learningRate *= .9f;   // This help to avoids oscillation as our accuracy improves.
@@ -56,7 +59,7 @@ namespace FourPixCam
             {
                 var output = learningNet.FeedForwardAndGetOutput(trainingSet[sample].Input);
                 // trainingSet[sample].IsOutputCorrect(output);
-                learningNet.BackPropagate(trainingSet[sample].ExpectedOutput.DumpToConsole("\ny ="), learningRate);   
+                learningNet.BackPropagate(trainingSet[sample].ExpectedOutput.DumpToConsole("\nt =", true), learningRate);   
             }
 
             return Test(testingData);
@@ -109,16 +112,26 @@ namespace FourPixCam
         }
         float Test(Sample[] testingData)
         {
+            "T e s t".WriteDumpingTitle();
+
             int bad = 0, good = 0;
 
             foreach (var sample in testingData)
             {
-                var output = learningNet.FeedForwardAndGetOutput(sample.Input);
+                var output = learningNet.FeedForwardAndGetOutput(sample.Input, false);
+                bool isCorrect;
 
                 if (sample.IsOutputCorrect(output))
+                { 
                     good++;
+                    isCorrect = true; 
+                }
                 else
+                { 
                     bad++;
+                    isCorrect = false;
+                }
+                sample.DumpToConsole(output, isCorrect, true);
             }
             return (float)good / (good + bad);
         }

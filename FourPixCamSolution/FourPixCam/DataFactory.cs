@@ -48,6 +48,7 @@ namespace FourPixCam
                 result.Add(new Sample
                 {
                     Label = label,
+                    RawInput = rawInputs[label],
                     Input = validInputs[label],
                     ExpectedOutput = validOutputs[label]
                 });

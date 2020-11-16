@@ -4,11 +4,16 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace FourPixCam
 {
     public static class ExtensionMethods
     {
+        public static string ToCollectionString<T>(this IEnumerable<T> collection)
+        {
+            return string.Join(",", collection.Select(x => x.ToString()));
+        }
         public static List<T> ToList<T>(this Array arr)
         {
             var result = new List<T>();
@@ -43,13 +48,18 @@ namespace FourPixCam
             }
             Process.Start(new ProcessStartInfo(localUrl) { UseShellExecute = true} );
         }
-        public static NeuralNet DumpToConsole(this NeuralNet net, bool waitForEnter = false)
+        public static NeuralNet DumpToConsole(this NeuralNet net, bool dumpWhileWorking)
         {
+            if (!dumpWhileWorking)
+                return net;
+
             Console.WriteLine($"\n                                    T H E   N E U R A L   N E T");
             Console.WriteLine($"                                  - - - - - - - - - - - - - - - -\n");
-            Console.WriteLine($"                                    NeuronsPerLayer : {net.WeightRange}");
-            Console.WriteLine($"                                    WeightRange     : {net.WeightRange}");
-            Console.WriteLine($"                                    BiasRange       : {net.BiasRange}");
+            Console.WriteLine($"                                    NeuronsPerLayer : {net.NeuronsPerLayer.ToCollectionString()}");
+            Console.WriteLine($"                                    WeightMin     : {net.WeightMin}");
+            Console.WriteLine($"                                    WeightMax     : {net.WeightMax}");
+            Console.WriteLine($"                                    BiasMin       : {net.BiasMin}");
+            Console.WriteLine($"                                    BiasMax       : {net.BiasMax}");
             Console.WriteLine();
 
             for (int i = 0; i < net.LayerCount; i++)
@@ -58,43 +68,57 @@ namespace FourPixCam
                 Console.WriteLine($"\n                                            L a y e r  {i}");
                 Console.WriteLine($"                                  - - - - - - - - - - - - - - - -\n");
                 Console.WriteLine($"                                    Neurons   : {net.NeuronsPerLayer[i]}");
-                Console.WriteLine($"                                    Activator : {net.ActivationDerivations[i]}");
+                Console.WriteLine($"                                    Activator : {net.Activations[i]?.Method.DeclaringType.Name}");
 
                 Matrix w = net.W[i];
                 if (w != null)
                 {
-                    w.DumpToConsole($"\nw = ");
+                    w.DumpToConsole($"\nw = ", dumpWhileWorking);
                 }
 
                 Matrix b = net.B[i];
                 if (b != null)
                 {
-                    b.DumpToConsole($"\nb = ");
+                    b.DumpToConsole($"\nb = ", dumpWhileWorking);
                 }
             }
 
-            if (waitForEnter)
-            {
-                Console.ReadLine();
-            }
             return net;
         }
-        public static Sample[] DumpToConsole(this Sample[] samples, bool waitForEnter = false)
+        public static Sample[] DumpToConsole(this Sample[] samples, bool dumpWhileWorking)
         {
+            if (!dumpWhileWorking)
+                return samples;
+
             foreach (var sample in samples)
             {
-                sample.DumpToConsole();
+                sample.DumpToConsole(null, false, dumpWhileWorking);
             }
 
-            if (waitForEnter)
-            {
-                Console.ReadLine();
-            }
             return samples;
         }
-        public static Sample DumpToConsole(this Sample sample, bool waitForEnter = false)
+        public static Sample DumpToConsole(this Sample sample, Matrix actualOutput, bool isCorrect, bool dumpWhileWorking)
         {
+            if (!dumpWhileWorking)
+                return sample;
 
+            Console.WriteLine("\n +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +\n");
+            sample.RawInput.DumpToConsole($"\n{nameof(sample.RawInput)} = ", dumpWhileWorking);
+            sample.Input.DumpToConsole($"\n{nameof(sample.Input)} = ", dumpWhileWorking);
+            actualOutput.DumpToConsole($"\n{nameof(actualOutput)} = ", dumpWhileWorking);
+            sample.ExpectedOutput.DumpToConsole($"\n{nameof(sample.ExpectedOutput)} = ", dumpWhileWorking);
+            Console.WriteLine($"{nameof(sample.Label)} = {sample.Label}", dumpWhileWorking);
+            if (isCorrect)
+            {
+                Console.ForegroundColor = ConsoleColor.Green;
+            }
+            else
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+            }
+            Console.WriteLine($"\n{nameof(isCorrect)} = {isCorrect}\n");
+            Console.ResetColor();
+            // Console.WriteLine(" +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +\n\n");
             return sample;
         }
         // Dumps to debugger. Used in the HTML debug view.
@@ -107,26 +131,27 @@ namespace FourPixCam
         }
 
 
-
+        /// <summary>
+        /// 'objects' = pairs of value (string) name & value itself (object).
+        /// </summary>
         public static void WriteDumpingTitle(this string title, params object[] objects)
         {
-            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
+            Console.WriteLine("\n\n    *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
             Console.WriteLine($"                                         {title}");
-            Console.WriteLine("\n    *   *   *   *  *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
-            Console.WriteLine();
+            Console.WriteLine("\n    *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n\n");
 
-            foreach (var o in objects)
+            for (int i = 0; i < objects.Length; i+=2)
             {
                 string s;
                 try
                 {
-                    s = (string)o;
+                    s = (string)objects[i+1];
                 }
                 catch (Exception)
                 {
-                    s = o.ToString();
+                    s = objects[i+1].ToString();
                 }
-                Console.WriteLine($"                                    {nameof(o)}   : {s}");
+                Console.WriteLine($"                                    {objects[i] as string}   : {s}");
             }
         }
     }

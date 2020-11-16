@@ -9,7 +9,7 @@ namespace FourPixCam
             NeuralNet net = NeuralNetFactory.GetNeuralNet("Implement jsonSource later!");
             Trainer trainer = new Trainer(net);
             //net.DumpToExplorer();
-            net.DumpToConsole();
+            net.DumpToConsole(true);
 
             Sample[] trainingData = DataFactory.GetTrainingData(100);
             Sample[] testingData = DataFactory.GetTestingData();
