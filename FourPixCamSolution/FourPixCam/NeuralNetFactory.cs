@@ -1,4 +1,5 @@
 ﻿using FourPixCam.Activators;
+using FourPixCam.CostFunctions;
 using MatrixHelper;
 using System;
 
@@ -35,7 +36,9 @@ namespace FourPixCam
 
                 W = GetWeights(layers, weightRange),
                 B = GetBiases(layers, biasRange),
-                ActivationDerivations = GetActivations("Implement jsonSource later!"),
+                Activations = GetActivations("Implement jsonSource later!"),
+                ActivationDerivations = GetActivationDerivations("Implement jsonSource later!"),
+                CostDerivation = GetCostDerivation("Implement jsonSource later!")
             };
 
             return result;
@@ -97,7 +100,6 @@ namespace FourPixCam
         }
         static Func<float, float>[] GetActivations(string jsonSource)
         {
-
             // Get from jsonSource later.
 
             return new Func<float, float>[]
@@ -108,6 +110,25 @@ namespace FourPixCam
                 ReLU.a, // Try LeakyReLU here.
                 ReLU.a
             };
+        }
+        static Func<float, float>[] GetActivationDerivations(string jsonSource)
+        {
+            // Get from jsonSource later.
+
+            return new Func<float, float>[]
+            {
+                default,   // Skip activator for first "layer".
+                Sigmoid.dadz,
+                Sigmoid.dadz,
+                ReLU.dadz, // Try LeakyReLU here.
+                ReLU.dadz
+            };
+        }
+        static Func<float, float, float> GetCostDerivation(string jsonSource)
+        {
+            // Get from jsonSource later.
+
+            return  SquaredMeanError.DerivationOfCostFunction;
         }
         static float GetRandom10th()
         {

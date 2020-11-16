@@ -80,14 +80,14 @@ namespace FourPixCam
         /// <param name="a">L</param>
         /// <param name="z">L</param>
         public static Matrix Get_deltaOutput(
-            Matrix a, Matrix t, Func<float, float, float> dCdaFunction, 
-            Matrix z, Func<float, float> dadzFunction)
+            Matrix a, Matrix t, Func<float, float, float> costDerivation, 
+            Matrix z, Func<float, float> activationDerivation)
         {
             Matrix result = new Matrix(a.m);
 
             for (int j = 0; j < a.m; j++)
             {
-                result[j] = dCdaFunction(a[j], t[j]) * dadzFunction(z[j]);
+                result[j] = costDerivation(a[j], t[j]) * activationDerivation(z[j]);
             }
 
             return result;
@@ -113,7 +113,7 @@ namespace FourPixCam
         /// <param name="delta">l</param>
         public static Matrix Get_CorrectedBiases(Matrix b, Matrix delta, float learningRate)
         {
-            return b - learningRate * delta.Transpose;
+            return b - learningRate * delta;
         }
     }
 }

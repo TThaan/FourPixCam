@@ -15,19 +15,17 @@ namespace FourPixCam
         static Dictionary<Label, Matrix> validOutputs;
         static Sample[] validSamples;
 
-        static DataFactory()
-        {
-            rnd = RandomProvider.GetThreadRandom();
-            rawInputs = GetRawInputs();
-            validInputs = GetValidInputs(rawInputs);
-            validOutputs = GetValidOutputs();
-            validSamples = GetValidSamples();
-        }
-
         #endregion
 
         internal static Sample[] GetTrainingData(int sampleSize)
         {
+            rnd = RandomProvider.GetThreadRandom();
+
+            rawInputs = GetRawInputs();
+            validInputs = GetValidInputs(rawInputs);
+            validOutputs = GetValidOutputs();
+            validSamples = GetValidSamples();
+
             return Enumerable.Range(0, sampleSize)
                 .Select(x => GetRandomValidSample())
                 .ToArray();

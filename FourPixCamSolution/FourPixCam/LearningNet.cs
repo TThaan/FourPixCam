@@ -42,7 +42,7 @@ namespace FourPixCam
         /// <summary>
         /// expected output
         /// </summary>
-        public Matrix t { get; set; }   // redundant?
+        //public Matrix t { get; set; }   // redundant?
         public float C { get; set; }
         /// <summary>
         /// total value (= wa + b)
@@ -83,14 +83,14 @@ namespace FourPixCam
 
             return A.Last();
         }
-        public void BackPropagate(Matrix y, float learningRate)
+        public void BackPropagate(Matrix t, float learningRate)
         {
             $"B A C K P R O P A P A G A T I O N".WriteDumpingTitle();
 
             // debug
-            var c = NeurNetMath.Get_C(A[net.LayerCount - 1], y, SquaredMeanError.CostFunction)
+            var c = NeurNetMath.Get_C(A[net.LayerCount - 1], t, SquaredMeanError.CostFunction)
                 .DumpToConsole($"\n{CostType.SquaredMeanError} C =");
-            var cTotal = NeurNetMath.Get_CTotal(A[net.LayerCount - 1], y, SquaredMeanError.CostFunction);
+            var cTotal = NeurNetMath.Get_CTotal(A[net.LayerCount - 1], t, SquaredMeanError.CostFunction);
             Console.WriteLine($"\nCTotal = {cTotal}\n");
 
             Matrix[] nextW = new Matrix[net.LayerCount];
@@ -99,14 +99,14 @@ namespace FourPixCam
             // Iterate backwards over each layer (skip input layer).
             for (int l = net.LayerCount - 1; l > 0; l--)
             {
-                dadz_OfLayer[l] = NeurNetMath.Get_dadz(A[l], Z[l], net.CostDerivations[l])
-                    .DumpToConsole($"\ndadz{l} =");
+                //dadz_OfLayer[l] = NeurNetMath.Get_dadz(A[l], Z[l], net.CostDerivation)
+                //    .DumpToConsole($"\ndadz{l} =");
                 Matrix delta;
 
                 if (l == net.LayerCount - 1)
                 {
                     // .. and C0 instead of a[i] and t as parameters here?
-                    delta = NeurNetMath.Get_deltaOutput(A[l], t, net.CostDerivations[l], Z[l], net.ActivationDerivations[l]); //
+                    delta = NeurNetMath.Get_deltaOutput(A[l], t, net.CostDerivation, Z[l], net.ActivationDerivations[l]); //
                 }
                 else
                 {
@@ -114,11 +114,14 @@ namespace FourPixCam
                 }
 
                 Delta[l] = delta.DumpToConsole($"\ndelta{l} =");
-                nextW[l] = Get_CorrectedWeights(net.W[l], A[l - 1], Delta[l], learningRate)
+                nextW[l] = Get_CorrectedWeights(net.W[l], Delta[l], A[l - 1], learningRate)
                     .DumpToConsole($"\nnextW{l} =");
-                nextB[l] = Get_CorrectedWeights(net.B[l], A[l - 1], Delta[l], learningRate)
+                nextB[l] = Get_CorrectedBiases(net.B[l], Delta[l], learningRate)
                     .DumpToConsole($"\nnextB{l} =");
             }
+
+            net.W = nextW;
+            net.B = nextB;
         }
 
         #region helper methods
