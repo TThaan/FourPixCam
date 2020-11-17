@@ -30,9 +30,14 @@ namespace FourPixCam
                 .Select(x => GetRandomValidSample())
                 .ToArray();
         }
-        internal static Sample[] GetTestingData()
+        internal static Sample[] GetTestingData(int multiplyer)
         {
-            return validSamples;
+            var result = new List<Sample>();
+            for (int i = 0; i < multiplyer; i++)
+            {
+                result.AddRange(validSamples);
+            }
+            return result.ToArray();
         }
 
         #region helper methods
@@ -60,37 +65,37 @@ namespace FourPixCam
         {
             return new Dictionary<Label, Matrix>
             {
-                [Label.AllWhite] = new Matrix(new float[,] {
-                    { 0, 0 },
-                    { 0, 0 } }),
-
                 [Label.AllBlack] = new Matrix(new float[,] {
-                    { 1, 1 },
-                    { 1, 1 } }),
+                    { -1, -1 },
+                    { -1, -1 } }),
 
-                [Label.TopWhite] = new Matrix(new float[,] {
-                    { 0, 0 },
+                [Label.AllWhite] = new Matrix(new float[,] {
+                    { 1, 1 },
                     { 1, 1 } }),
 
                 [Label.TopBlack] = new Matrix(new float[,] {
-                    { 1, 1 },
-                    { 0, 0 } }),
+                    { -1, -1 },
+                    { 1, 1 } }),
 
-                [Label.LeftWhite] = new Matrix(new float[,] {
-                    { 0, 1 },
-                    { 0, 1 } }),
+                [Label.TopWhite] = new Matrix(new float[,] {
+                    { 1, 1 },
+                    { -1, -1 } }),
 
                 [Label.LeftBlack] = new Matrix(new float[,] {
-                    { 1, 0 },
-                    { 1, 0 } }),
+                    { -1, 1 },
+                    { -1, 1 } }),
 
-                [Label.SlashWhite] = new Matrix(new float[,] {
-                    { 1, 0 },
-                    { 0, 1 } }),
+                [Label.LeftWhite] = new Matrix(new float[,] {
+                    { 1, -1 },
+                    { 1, -1 } }),
 
                 [Label.SlashBlack] = new Matrix(new float[,] {
-                    { 0, 1 },
-                    { 1, 0 } })
+                    { 1, -1 },
+                    { -1, 1 } }),
+
+                [Label.SlashWhite] = new Matrix(new float[,] {
+                    { -1, 1 },
+                    { 1, -1 } })
             };
         }
         static Dictionary<Label, Matrix> GetValidInputs(Dictionary<Label, Matrix> rawInputs)

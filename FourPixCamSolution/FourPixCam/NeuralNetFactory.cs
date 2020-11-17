@@ -106,8 +106,8 @@ namespace FourPixCam
                 default,   // Skip activator for first "layer".
                 Sigmoid.a,
                 Sigmoid.a,
-                ReLU.a, // Try LeakyReLU here.
-                ReLU.a
+                LeakyReLU.a, // Try LeakyReLU here.
+                Sigmoid.a
             };
         }
         static Func<float, float>[] GetActivationDerivations(string jsonSource)

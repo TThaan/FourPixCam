@@ -66,11 +66,6 @@ namespace FourPixCam
 
         public Matrix FeedForwardAndGetOutput(Matrix input, bool dumpWhileWorking = true)
         {
-            if (dumpWhileWorking)
-            {
-                $"F E E D   F O R W A R D".WriteDumpingTitle();
-            }
-
             // wa: Separate inp layer from 'layers' ?!
             A[0] = input.DumpToConsole($"\nA[0] = ", dumpWhileWorking); //new Matrix(input.ToArray());
             if (dumpWhileWorking)
@@ -87,7 +82,7 @@ namespace FourPixCam
                     net.B[i].DumpToConsole($"\nB{i} = ", dumpWhileWorking)).DumpToConsole($"\nZ{i} = ", dumpWhileWorking); //.DumpToConsole($"\nA{i-1} = ")
                 A[i] = NeurNetMath.Get_a(
                     Z[i], 
-                    net.ActivationDerivations[i]).DumpToConsole($"\nA{i} = ", dumpWhileWorking);
+                    net.Activations[i]).DumpToConsole($"\nA{i} = ", dumpWhileWorking);
                 if (dumpWhileWorking)
                 {
                     Console.WriteLine("\n    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
@@ -98,8 +93,6 @@ namespace FourPixCam
         }
         public void BackPropagate(Matrix t, float learningRate, bool dumpWhileWorking = true)
         {
-            $"B A C K P R O P A P A G A T I O N".WriteDumpingTitle();
-
             // debug
             var c = NeurNetMath.Get_C(A[net.LayerCount - 1], t, SquaredMeanError.CostFunction)
                 .DumpToConsole($"\n{CostType.SquaredMeanError} C =", dumpWhileWorking);

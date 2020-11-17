@@ -32,6 +32,9 @@ namespace FourPixCam
         
         public void Train(Sample[] trainingData, Sample[] testingData, float learningRate, int epochs)
         {
+            var start = DateTime.Now;
+            Console.WriteLine($"\n\n                                        Training Start: {start}");
+            
             for (int epoch = 0; epoch < epochs; epoch++)
             {
                 $"T R A I N I N G".WriteDumpingTitle(
@@ -39,29 +42,34 @@ namespace FourPixCam
                     nameof(epoch), epoch,
                     nameof(epochs), epochs);
 
-                currentAccuracy = TrainEpoch(trainingData, testingData, learningRate);
+                currentAccuracy = TrainEpoch(trainingData, testingData, learningRate, epoch);
                 learningRate *= .9f;   // This help to avoids oscillation as our accuracy improves.
 
                 Console.WriteLine($"                                    CurrentAccuracy : {currentAccuracy}");
             }
 
-            // var testAccuracy = ((Test(new FiringNetwork(Network), testingData) * 100).ToString("N1") + "%");
-            // TrainingInfo += $"\r\nTotal epochs = {CurrentEpoch}\r\nFinal test accuracy = {testAccuracy}";
-
             Console.WriteLine("Finished training.");
+
+            var end = DateTime.Now;
+            Console.WriteLine($"\n\n                                        Training End: {end}  (Duration: {end - start})");
         }
 
-        float TrainEpoch(Sample[] trainingSet, Sample[] testingData, float learningRate)
+        float TrainEpoch(Sample[] trainingSet, Sample[] testingData, float learningRate, int epoch)
         {
             Shuffle(trainingSet);
 
             for (int sample = 0; sample < trainingSet.Length; sample++)
             {
+                $"F E E D   F O R W A R D".WriteDumpingTitle($"epoch/sample: {epoch}/{sample}");
+
                 var output = learningNet.FeedForwardAndGetOutput(trainingSet[sample].Input);
                 // trainingSet[sample].IsOutputCorrect(output);
+
+                $"B A C K P R O P A P A G A T I O N".WriteDumpingTitle($"epoch/sample: {epoch}/{sample}");
                 learningNet.BackPropagate(trainingSet[sample].ExpectedOutput.DumpToConsole("\nt =", true), learningRate);   
             }
 
+            "T e s t".WriteDumpingTitle($"epoch: {epoch}");
             return Test(testingData);
         }
         /*
@@ -112,7 +120,7 @@ namespace FourPixCam
         }
         float Test(Sample[] testingData)
         {
-            "T e s t".WriteDumpingTitle();
+            Shuffle(testingData);
 
             int bad = 0, good = 0;
 
@@ -121,8 +129,10 @@ namespace FourPixCam
                 var output = learningNet.FeedForwardAndGetOutput(sample.Input, false);
                 bool isCorrect;
 
-                if (sample.IsOutputCorrect(output))
-                { 
+                // param 1 = output (matrix)
+                // param 2 = tolerance (float)
+                if (sample.IsOutputCorrect(output, 0.25f))
+                {
                     good++;
                     isCorrect = true; 
                 }

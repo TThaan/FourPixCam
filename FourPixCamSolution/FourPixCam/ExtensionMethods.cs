@@ -154,5 +154,14 @@ namespace FourPixCam
                 Console.WriteLine($"                                    {objects[i] as string}   : {s}");
             }
         }
+        /// <summary>
+        /// 'objects' = pairs of value (string) name & value itself (object).
+        /// </summary>
+        public static void WriteDumpingTitle(this string title, string commentInBrackets)
+        {
+            Console.WriteLine("\n\n    *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n");
+            Console.WriteLine($"                                         {title}   ({commentInBrackets})");
+            Console.WriteLine("\n    *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   *   \n\n");
+        }
     }
 }

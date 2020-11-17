@@ -4,14 +4,13 @@ using System.Linq;
 
 namespace FourPixCam.Activators
 {
-    public class Sigmoid
-    {
-        /// <summary>
-        /// Activation ('squashing') function of any weighted input neuron z.
-        /// </summary>
+    public class Tanh
+    {/// <summary>
+     /// Activation ('squashing') function of any weighted input neuron z.
+     /// </summary>
         public static float a(float z)
         {
-            var tmp = 1 / (1 + (float)Math.Exp(-z));
+            var tmp = (float)((Math.Exp(z)-Math.Exp(-z)) / (Math.Exp(z) + Math.Exp(-z)));
             return tmp;
         }
         /// <summary>
@@ -20,7 +19,7 @@ namespace FourPixCam.Activators
         public static Matrix a(Matrix z)
         {
             return new Matrix(
-                z.Select(x => 1 / (1 + (float)Math.Exp(-x)))
+                z.Select(z_j => (float)((Math.Exp(z_j) - Math.Exp(-z_j)) / (Math.Exp(z_j) + Math.Exp(-z_j))))
                 .ToArray());
         }
         /// <summary>
@@ -28,7 +27,7 @@ namespace FourPixCam.Activators
         /// </summary>
         public static float dadz(float z)
         {
-            var check = a(z) * (1 - a(z));
+            var check = 1 - a(z) * a(z);
             if (float.IsInfinity(check))
             {
 

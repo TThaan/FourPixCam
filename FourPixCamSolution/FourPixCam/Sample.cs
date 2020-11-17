@@ -12,34 +12,27 @@ namespace FourPixCam
         // public Matrix ActualOutput { get; set; }
 
         // Returns true if each output equals or is close to each expectedOutput.
-        public Func<Matrix, bool> IsOutputCorrect => IsOutputApproximatelyCorrect;
+        public Func<Matrix, float, bool> IsOutputCorrect => IsOutputApproximatelyCorrect;
             // outputMatrix => outputMatrix == ExpectedOutput;
 
         #region helpers
 
-        bool IsOutputApproximatelyCorrect(Matrix output)
+        bool IsOutputApproximatelyCorrect(Matrix output, float tolerance)
         {
             if (output.m == ExpectedOutput.m && output.n == 1 && ExpectedOutput.n == 1)
             {
                 for (int j = 0; j < output.m; j++)
                 {
-                    if (ExpectedOutput[j] == 0)
+                    var a_j = output[j];
+                    var t_j = ExpectedOutput[j];
+                    var x = Math.Abs(t_j - a_j);
+                    if (x > tolerance)
                     {
-                        var x = output[j];
-                        return x < 0.1;
-                    }
-                    else if (ExpectedOutput[j] == 1)
-                    {
-                        var x = output[j];
-                        return x >= 0.1;
-                    }
-                    else
-                    {
-                        throw new ArgumentException("Unexpected ExpectedOutput!");
+                        return false;
                     }
                 }
             }
-            return false;
+            return true;
         }
 
         #endregion

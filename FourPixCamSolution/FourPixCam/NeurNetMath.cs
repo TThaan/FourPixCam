@@ -30,14 +30,9 @@ namespace FourPixCam
         /// </summary>
         public static Matrix Get_a(Matrix z, Func<float, float> activation)
         {
-            Matrix result = new Matrix(z.m);
-
-            for (int j = 0; j < z.m; j++)
-            {
-                result[j] = activation(z[j]);
-            }
-
-            return result;
+            return new Matrix(
+                z.Select(z_j => activation(z_j)).ToArray()
+                );  // ToMatrix()?
         }
         /// <summary>
         /// Partial derivation of a with respect to z.
@@ -99,7 +94,7 @@ namespace FourPixCam
         {
             Matrix dCda = w.Transpose * delta;
             Matrix dadz = new Matrix(z.Select(x => dadzFunction(x)).ToArray());
-
+            
             return HadamardProduct(dCda, dadz);
         }
         /// <param name="w">l</param>
