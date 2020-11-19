@@ -14,6 +14,10 @@ namespace FourPixCam
         {
             return string.Join(",", collection.Select(x => x.ToString()));
         }
+        public static string ToVerticalCollectionString<T>(this IEnumerable<T> collection)
+        {
+            return string.Join("\n", collection.Select(x => x.ToString()));
+        }
         public static List<T> ToList<T>(this Array arr)
         {
             var result = new List<T>();
@@ -76,9 +80,9 @@ namespace FourPixCam
                     w.DumpToConsole($"\nw = ", dumpWhileWorking);
                 }
 
-                Matrix b = net.B[i];
-                if (b != null)
+                if (net.IsWithBias)
                 {
+                    Matrix b = net.B[i];
                     b.DumpToConsole($"\nb = ", dumpWhileWorking);
                 }
             }

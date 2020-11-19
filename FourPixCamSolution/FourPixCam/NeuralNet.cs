@@ -23,5 +23,6 @@ namespace FourPixCam
         /// input: z, t: a'=f'(z)=dadz
         /// </summary>
         public Func<float, float, float> CostDerivation { get; set; }
+        public bool IsWithBias { get; set; }
     }
 }

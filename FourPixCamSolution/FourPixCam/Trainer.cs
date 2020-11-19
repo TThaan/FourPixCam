@@ -1,5 +1,6 @@
 ﻿using MatrixHelper;
 using System;
+using System.IO;
 using System.Linq;
 
 namespace FourPixCam
@@ -14,7 +15,7 @@ namespace FourPixCam
 
         public Trainer(NeuralNet net)
         {
-            Net = net;
+            InitialNet = net.GetCopy();
             learningNet = new LearningNet(net);
 
             rnd = RandomProvider.GetThreadRandom();
@@ -24,14 +25,18 @@ namespace FourPixCam
 
         #region properties
 
-        public NeuralNet Net { get; }
+        public NeuralNet InitialNet { get; }
 
         #endregion
 
         #region methods
         
-        public void Train(Sample[] trainingData, Sample[] testingData, float learningRate, int epochs)
+        public float Train(Sample[] trainingData, Sample[] testingData, float learningRate, int epochs, TextWriter standard, TextWriter custom)
         {
+            // Test 
+
+            Console.WriteLine($"                                    Initial Accuracy : {Test(testingData)}");
+
             var start = DateTime.Now;
             Console.WriteLine($"\n\n                                        Training Start: {start}");
             
@@ -43,15 +48,35 @@ namespace FourPixCam
                     nameof(epochs), epochs);
 
                 currentAccuracy = TrainEpoch(trainingData, testingData, learningRate, epoch);
-                learningRate *= .9f;   // This help to avoids oscillation as our accuracy improves.
+                Console.WriteLine($"                                    Current Accuracy : {currentAccuracy}    (eta = {learningRate})");
+                Console.SetOut(standard);
+                Console.WriteLine($"                                    Current Accuracy : {currentAccuracy}    (eta = {learningRate})");
+                Console.SetOut(custom);
 
-                Console.WriteLine($"                                    CurrentAccuracy : {currentAccuracy}");
+                learningRate *= .9f;
             }
 
             Console.WriteLine("Finished training.");
 
             var end = DateTime.Now;
-            Console.WriteLine($"\n\n                                        Training End: {end}  (Duration: {end - start})");
+            Console.WriteLine($"\n\n                                        Training End: {end}  (Duration: {end - start})\n");
+
+            // OriginalNet.DumpToConsole(true);
+            // learningNet.Net.DumpToConsole(true);
+
+            // Log/Dump
+            for (int i = 1; i < InitialNet.W.Length; i++)
+            {
+                InitialNet.W[i].DumpToConsole($"\nStart  W{i}", true);
+                learningNet.Net.W[i].DumpToConsole($"\nEnd   W{i}", true);
+                (learningNet.Net.W[i] - InitialNet.W[i]).DumpToConsole($"\nTotal dW{i}", true);
+
+                // InitialNet.B[i].DumpToConsole($"\nStart  B{i}", true);
+                // learningNet.Net.B[i].DumpToConsole($"\nEnd   B{i}", true);
+                // (learningNet.Net.B[i] - InitialNet.B[i]).DumpToConsole($"\nTotal dB{i}", true);
+            }
+
+            return currentAccuracy;
         }
 
         float TrainEpoch(Sample[] trainingSet, Sample[] testingData, float learningRate, int epoch)
@@ -61,6 +86,8 @@ namespace FourPixCam
             for (int sample = 0; sample < trainingSet.Length; sample++)
             {
                 $"F E E D   F O R W A R D".WriteDumpingTitle($"epoch/sample: {epoch}/{sample}");
+                trainingSet[sample].Input.DumpToConsole($"\nA[0] = ", true);
+                Console.WriteLine("\n    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
 
                 var output = learningNet.FeedForwardAndGetOutput(trainingSet[sample].Input);
                 // trainingSet[sample].IsOutputCorrect(output);
@@ -131,7 +158,7 @@ namespace FourPixCam
 
                 // param 1 = output (matrix)
                 // param 2 = tolerance (float)
-                if (sample.IsOutputCorrect(output, 0.25f))
+                if (sample.IsOutputCorrect(output, 0.45f))
                 {
                     good++;
                     isCorrect = true; 

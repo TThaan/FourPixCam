@@ -11,7 +11,7 @@
         /// </summary>
         public static float CostFunction(float a, float t)
         {
-            return 0.5f * (t-a) * (t - a);
+            return (t-a) * (t - a); //0.5f * 
         }
         /// <summary>
         /// Partial derivative of the cost with respect to a single output neuron a.
