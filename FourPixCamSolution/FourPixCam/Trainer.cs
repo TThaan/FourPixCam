@@ -68,6 +68,7 @@ namespace FourPixCam
             for (int i = 1; i < InitialNet.W.Length; i++)
             {
                 InitialNet.W[i].DumpToConsole($"\nStart  W{i}", true);
+                Console.WriteLine($"Whole w-layer-deviation (from 0): {InitialNet.W[i].Sum() / InitialNet.W[i].LongCount()}");
                 learningNet.Net.W[i].DumpToConsole($"\nEnd   W{i}", true);
                 (learningNet.Net.W[i] - InitialNet.W[i]).DumpToConsole($"\nTotal dW{i}", true);
 
@@ -158,7 +159,7 @@ namespace FourPixCam
 
                 // param 1 = output (matrix)
                 // param 2 = tolerance (float)
-                if (sample.IsOutputCorrect(output, 0.45f))
+                if (sample.IsOutputCorrect(output, 0.2f))
                 {
                     good++;
                     isCorrect = true; 

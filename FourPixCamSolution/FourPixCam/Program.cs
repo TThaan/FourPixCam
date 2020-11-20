@@ -9,10 +9,11 @@ namespace FourPixCam
         #region fields
 
         static int
+            samplesCount = 500,
             trainingsCount = 10,
             epochCount = 20;
         static float 
-            learningRate = 0.01f,
+            learningRate = 0.1f,
             aggregatedAccuracies,
             meanAccuracy = 0;        
         static List<(int TrainingsNr, float Accuracy)> accuracies = new List<(int, float)>();
@@ -38,7 +39,7 @@ namespace FourPixCam
                 //net.DumpToExplorer();
                 net.DumpToConsole(true);
 
-                Sample[] trainingData = DataFactory.GetTrainingData(1000);
+                Sample[] trainingData = DataFactory.GetTrainingData(samplesCount);
                 Sample[] testingData = DataFactory.GetTestingData(2);
 
                 float accuracy = trainer.Train(trainingData, testingData, learningRate, epochCount, standardWriter, customWriter);

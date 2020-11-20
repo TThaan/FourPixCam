@@ -18,7 +18,7 @@
         /// </summary>
         public static float DerivationOfCostFunction(float a, float t)
         {
-            return a - t;
+            return (a - t);//2*
         }
     }
 }

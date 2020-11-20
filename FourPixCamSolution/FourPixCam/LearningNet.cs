@@ -92,6 +92,8 @@ namespace FourPixCam
             // debug
             var c = NeurNetMath.Get_C(A[Net.LayerCount - 1], t, SquaredMeanError.CostFunction)
                 .DumpToConsole($"\n{CostType.SquaredMeanError} C =", dumpWhileWorking);
+            var dcDa = (2*(A[Net.LayerCount - 1] - t))
+                .DumpToConsole($"\n{CostType.SquaredMeanError} C =", dumpWhileWorking);
             var cTotal = NeurNetMath.Get_CTotal(A[Net.LayerCount - 1], t, SquaredMeanError.CostFunction);
             Console.WriteLine($"\nCTotal = {cTotal}\n");
 
