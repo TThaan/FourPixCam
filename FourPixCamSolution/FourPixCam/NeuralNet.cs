@@ -7,11 +7,6 @@ namespace FourPixCam
     {
         public int[] NeuronsPerLayer { get; set; }
         public int LayerCount { get; set; }
-        
-        public float WeightMin { get; set; }  // only in factory?
-        public float WeightMax { get; set; }  // only in factory?
-        public float BiasMin { get; set; }  // only in factory?
-        public float BiasMax { get; set; }  // only in factory?
         public Matrix[] W { get; set; }
         public Matrix[] B { get; set; }
         /// <summary>

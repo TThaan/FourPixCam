@@ -5,18 +5,12 @@ using static MatrixHelper.Operations;
 
 namespace FourPixCam
 {
-    // Exchange activation type parameters with funcs!?
-
-    // wa: not static but as idisp-instance for each back-prop
-    // including stored arrays '..ofLayer[l]'?
-
+    /// <summary>
+    /// Dumping as optional param (only) here?
+    /// wa: ILogger injection?
+    /// </summary>
     public class NeurNetMath
     {
-        // redundant?
-        public enum CostType
-        {
-            Undefined, SquaredMeanError
-        }
 
         /// <summary>
         /// Weighted input z=wa+b.
@@ -28,20 +22,13 @@ namespace FourPixCam
         /// <summary>
         /// Activation function of the weighted input a=f(z).
         /// </summary>
-        public static Matrix Get_a(Matrix z, Func<float, float> activation)
+        public static Matrix Get_a(Matrix z, Func<float, float> activation, bool isLogged = false)
         {
             return new Matrix(
                 z.Select(z_j => activation(z_j)).ToArray()
                 );  // ToMatrix()?
         }
-        /// <summary>
-        /// Partial derivation of a with respect to z.
-        /// </summary>
-        public static Matrix Get_dadz(Matrix a, Matrix z, Func<float, float, float> derivationOfActivation)
-        {
-            return Partial(a, z, derivationOfActivation);
-        }
-        public static Matrix Get_C(Matrix a, Matrix t, Func<float, float, float> c_j)
+        public static Matrix Get_C(Matrix a, Matrix t, Func<float, float, float> c_j, bool isLogged = false)
         {
             Matrix result = new Matrix(a.m);
 
@@ -50,32 +37,25 @@ namespace FourPixCam
                 result[j] = c_j(a[j], t[j]);
             }
 
+            if (isLogged)
+                result.DumpToConsole($"\n{c_j.Method.DeclaringType.Name} C =");
+
             return result;
         }
-        public static float Get_CTotal(Matrix a, Matrix t, Func<float, float, float> c0)
+        public static float Get_CTotal(Matrix a, Matrix t, Func<float, float, float> c0, bool isLogged = false)
         {
+            float result = Get_C(a, t, c0).Sum();
+
+            if (isLogged)
+                Console.WriteLine($"\nCTotal = {result}\n");
+
             // CTotal = total or averaged (i.e. sum divided by a.m)?
-            return Get_C(a, t, c0).Sum();
-        }
-        /// <summary>
-        /// = delta * w
-        /// </summary>
-        /// <returns></returns>
-        public static Matrix Get_dCda(float C, Matrix a, Func<float, float, float> derivationOfActivation)
-        {
-            Matrix result = a.Transpose;
-
-            for (int j = 0; j < a.m; j++)
-            {
-                result[1] = derivationOfActivation(C, a[1]);
-            }
-
             return result;
         }
         /// <param name="a">L</param>
         /// <param name="z">L</param>
         public static Matrix Get_deltaOutput(
-            Matrix a, Matrix t, Func<float, float, float> costDerivation, 
+            Matrix a, Matrix t, Func<float, float, float> costDerivation,
             Matrix z, Func<float, float> activationDerivation)
         {
             Matrix result = new Matrix(a.m);

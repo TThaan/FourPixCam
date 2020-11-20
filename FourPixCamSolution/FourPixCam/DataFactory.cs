@@ -11,68 +11,28 @@ namespace FourPixCam
 
         static Random rnd;
         static Dictionary<Label, Matrix> rawInputs;
-        static Dictionary<Label, Matrix> noisyInputs;
+        static Dictionary<Label, Matrix> distortedInputs;
         static Dictionary<Label, Matrix> validInputs;
         static Dictionary<Label, Matrix> validOutputs;
         static Sample[] validSamples;
 
         #endregion
 
-        internal static Sample[] GetTrainingData(int sampleSize)
+        #region public
+
+        public static Sample[] GetTrainingData(int sampleSize, float distortionDeviation = 0f)
         {
             rnd = RandomProvider.GetThreadRandom();
 
             rawInputs = GetRawInputs();
-            noisyInputs = GetNoisyInputs();
-            validInputs = GetValidInputs(rawInputs);//noisyInputs
+            distortedInputs = GetDistortedInputs(distortionDeviation);
+            validInputs = GetValidInputs(distortedInputs);
             validOutputs = GetValidOutputs();
             validSamples = GetValidSamples();
 
             return GetValidTrainingData(sampleSize, validSamples);
         }
-
-        private static Sample[] GetValidTrainingData(int sampleSize, Sample[] _validSamples)
-        {
-            List<Sample> tmpResult = new List<Sample>();
-            int amountOfCompleteSampleSets = (int)Math.Round((double)sampleSize / rawInputs.Values.Count, 0);
-
-            for (int i = 0; i < amountOfCompleteSampleSets; i++)
-            {
-                tmpResult.AddRange(_validSamples);
-            }
-            Sample[] result = tmpResult.ToArray();
-            Shuffle(result);
-
-            // debug
-            //var debug = result.GroupBy(x => x.Label);
-            //if (debug.Any(y=>y.Count() < amountOfCompleteSampleSets-1))
-            //{
-
-            //}
-            //List<int> counts = new List<int>();
-            //foreach (var item in debug)
-            //{
-            //    counts.Add(item.Count());
-            //}
-            return result;
-        }
-        static void Shuffle(Sample[] trainingData)
-        {
-            int n = trainingData.Length;
-
-            while (n > 1)
-            {
-                int k = rnd.Next(n--);
-
-                // Exchange arr[n] with arr[k]
-
-                Sample temp = trainingData.ElementAt(n);
-                trainingData[n] = trainingData[k];
-                trainingData[k] = temp;
-            }
-        }
-
-        internal static Sample[] GetTestingData(int multiplyer)
+        public static Sample[] GetTestingData(int multiplyer)
         {
             var result = new List<Sample>();
             for (int i = 0; i < multiplyer; i++)
@@ -82,8 +42,23 @@ namespace FourPixCam
             return result.ToArray();
         }
 
+        #endregion
+
         #region helper methods
 
+        static Sample[] GetValidTrainingData(int sampleSize, Sample[] _validSamples)
+        {
+            List<Sample> tmpResult = new List<Sample>();
+            int amountOfCompleteSampleSets = (int)Math.Round((double)sampleSize / rawInputs.Values.Count, 0);
+
+            for (int i = 0; i < amountOfCompleteSampleSets; i++)
+            {
+                tmpResult.AddRange(_validSamples);
+            }
+            Sample[] result = tmpResult.Shuffle().ToArray();
+            
+            return result;
+        }
         static Sample[] GetValidSamples()
         {
             var result = new List<Sample>();
@@ -140,48 +115,47 @@ namespace FourPixCam
                     { 1, -1 } })
             };
         }
-        static Dictionary<Label, Matrix> GetNoisyInputs()
+        static Dictionary<Label, Matrix> GetDistortedInputs(float d)
         {
             return new Dictionary<Label, Matrix>
             {
                 [Label.AllBlack] = new Matrix(new float[,] {
-                    { -(GetNoisyValue()), -(GetNoisyValue()) },
-                    { -(GetNoisyValue()), -(GetNoisyValue()) } }),
+                    { -(GetDistortedValue(d)), -(GetDistortedValue(d)) },
+                    { -(GetDistortedValue(d)), -(GetDistortedValue(d)) } }),
 
                 [Label.AllWhite] = new Matrix(new float[,] {
-                    { (GetNoisyValue()), (GetNoisyValue()) },
-                    { (GetNoisyValue()), (GetNoisyValue()) } }),
+                    { (GetDistortedValue(d)), (GetDistortedValue(d)) },
+                    { (GetDistortedValue(d)), (GetDistortedValue(d)) } }),
 
                 [Label.TopBlack] = new Matrix(new float[,] {
-                    { -(GetNoisyValue()), -(GetNoisyValue()) },
-                    { (GetNoisyValue()), (GetNoisyValue()) } }),
+                    { -(GetDistortedValue(d)), -(GetDistortedValue(d)) },
+                    { (GetDistortedValue(d)), (GetDistortedValue(d)) } }),
 
                 [Label.TopWhite] = new Matrix(new float[,] {
-                    { (GetNoisyValue()), (GetNoisyValue()) },
-                    { -(GetNoisyValue()), -(GetNoisyValue()) } }),
+                    { (GetDistortedValue(d)), (GetDistortedValue(d)) },
+                    { -(GetDistortedValue(d)), -(GetDistortedValue(d)) } }),
 
                 [Label.LeftBlack] = new Matrix(new float[,] {
-                    { -(GetNoisyValue()), (GetNoisyValue()) },
-                    { -(GetNoisyValue()), (GetNoisyValue()) } }),
+                    { -(GetDistortedValue(d)), (GetDistortedValue(d)) },
+                    { -(GetDistortedValue(d)), (GetDistortedValue(d)) } }),
 
                 [Label.LeftWhite] = new Matrix(new float[,] {
-                    { (GetNoisyValue()), -(GetNoisyValue()) },
-                    { (GetNoisyValue()), -(GetNoisyValue()) } }),
+                    { (GetDistortedValue(d)), -(GetDistortedValue(d)) },
+                    { (GetDistortedValue(d)), -(GetDistortedValue(d)) } }),
 
                 [Label.SlashBlack] = new Matrix(new float[,] {
-                    { (GetNoisyValue()), -(GetNoisyValue()) },
-                    { -(GetNoisyValue()), (GetNoisyValue()) } }),
+                    { (GetDistortedValue(d)), -(GetDistortedValue(d)) },
+                    { -(GetDistortedValue(d)), (GetDistortedValue(d)) } }),
 
                 [Label.SlashWhite] = new Matrix(new float[,] {
-                    { -(GetNoisyValue()), (GetNoisyValue()) },
-                    { (GetNoisyValue()), -(GetNoisyValue()) } })
+                    { -(GetDistortedValue(d)), (GetDistortedValue(d)) },
+                    { (GetDistortedValue(d)), -(GetDistortedValue(d)) } })
             };
         }
-        static float GetNoisyValue()
+        static float GetDistortedValue(float distortionDeviation)
         {
-            return 1f - (float)rnd.NextDouble() / 3f;
+            return 1f - (float)rnd.NextDouble() * distortionDeviation;
         }
-
         static Dictionary<Label, Matrix> GetValidInputs(Dictionary<Label, Matrix> _rawInputs)
         {
             var test = _rawInputs.ToDictionary(x => x.Key, x => Operations.FlattenToOneColumn(x.Value));
@@ -207,35 +181,6 @@ namespace FourPixCam
 
                 [Label.SlashBlack] = new Matrix(new float[] { 0, 0, 0, 1 })
             };
-        }
-        static Sample GetRandomValidSample()
-        {
-            // int AllBlack, AllWhite, LeftBlack
-            var debug = validSamples.ElementAt(rnd.Next(0, validInputs.Count()));
-            switch (debug.Label)
-            {
-                case Label.Undefined:
-                    break;
-                case Label.AllBlack:
-                    break;
-                case Label.AllWhite:
-                    break;
-                case Label.LeftBlack:
-                    break;
-                case Label.LeftWhite:
-                    break;
-                case Label.SlashBlack:
-                    break;
-                case Label.SlashWhite:
-                    break;
-                case Label.TopBlack:
-                    break;
-                case Label.TopWhite:
-                    break;
-                default:
-                    break;
-            }
-            return debug;
         }
 
         #endregion

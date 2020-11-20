@@ -1,9 +1,5 @@
 ﻿namespace FourPixCam.CostFunctions
 {
-    /// <summary>
-    /// Only (elements`) function & derivative should be in here,
-    /// no matrix operations!?! Those belong to NeurNetMath.
-    /// </summary>
     class SquaredMeanError
     {
         /// <summary>

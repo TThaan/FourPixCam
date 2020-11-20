@@ -9,13 +9,14 @@ namespace FourPixCam
         #region fields
 
         static int
-            samplesCount = 500,
-            trainingsCount = 10,
-            epochCount = 20;
+            samplesCount = 250,
+            trainingsCount = 5,
+            epochCount = 10;
         static float 
             learningRate = 0.1f,
             aggregatedAccuracies,
-            meanAccuracy = 0;        
+            meanAccuracy = 0,
+            distortionDeviation = .3f;        
         static List<(int TrainingsNr, float Accuracy)> accuracies = new List<(int, float)>();
         static StreamWriter customWriter = GetCustomWriter(@"c:\temp\FourPixTest.txt");
         static TextWriter standardWriter = Console.Out;
@@ -37,9 +38,9 @@ namespace FourPixCam
                 NeuralNet net = NeuralNetFactory.GetNeuralNet("Implement jsonSource later!", false);
                 Trainer trainer = new Trainer(net);
                 //net.DumpToExplorer();
-                net.DumpToConsole(true);
+                net.DumpToConsole();
 
-                Sample[] trainingData = DataFactory.GetTrainingData(samplesCount);
+                Sample[] trainingData = DataFactory.GetTrainingData(samplesCount, distortionDeviation);
                 Sample[] testingData = DataFactory.GetTestingData(2);
 
                 float accuracy = trainer.Train(trainingData, testingData, learningRate, epochCount, standardWriter, customWriter);

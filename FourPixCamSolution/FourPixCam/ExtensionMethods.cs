@@ -29,6 +29,29 @@ namespace FourPixCam
 
             return result;
         }
+        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> collection)
+        {
+            Random rnd = new Random();
+
+            T[] result = collection.ToArray();
+            int count = collection.Count();
+
+            for (int index = 0; index < count; index++)
+            {
+                int newIndex = rnd.Next(count);
+
+                // Exchange arr[n] with arr[k]
+
+                T item = result[index];
+                result[index] = result[newIndex];
+                result[newIndex] = item;
+            }
+
+            return result;
+        }
+
+        // Into ILogger?:
+
         // Dumps to a temporary html file and opens in the browser.
         public static void DumpToExplorer<T>(this T o, string title = "")
         {
@@ -52,18 +75,12 @@ namespace FourPixCam
             }
             Process.Start(new ProcessStartInfo(localUrl) { UseShellExecute = true} );
         }
-        public static NeuralNet DumpToConsole(this NeuralNet net, bool dumpWhileWorking)
+        public static NeuralNet DumpToConsole(this NeuralNet net)
         {
-            if (!dumpWhileWorking)
-                return net;
-
             Console.WriteLine($"\n                                    T H E   N E U R A L   N E T");
             Console.WriteLine($"                                  - - - - - - - - - - - - - - - -\n");
             Console.WriteLine($"                                    NeuronsPerLayer : {net.NeuronsPerLayer.ToCollectionString()}");
-            Console.WriteLine($"                                    WeightMin     : {net.WeightMin}");
-            Console.WriteLine($"                                    WeightMax     : {net.WeightMax}");
-            Console.WriteLine($"                                    BiasMin       : {net.BiasMin}");
-            Console.WriteLine($"                                    BiasMax       : {net.BiasMax}");
+            Console.WriteLine($"                                    IsWithBias      : {net.IsWithBias}");
             Console.WriteLine();
 
             for (int i = 0; i < net.LayerCount; i++)
@@ -77,41 +94,35 @@ namespace FourPixCam
                 Matrix w = net.W[i];
                 if (w != null)
                 {
-                    w.DumpToConsole($"\nw = ", dumpWhileWorking);
+                    w.DumpToConsole($"\nw = ");
                 }
 
                 if (net.IsWithBias)
                 {
                     Matrix b = net.B[i];
-                    b.DumpToConsole($"\nb = ", dumpWhileWorking);
+                    b.DumpToConsole($"\nb = ");
                 }
             }
 
             return net;
         }
-        public static Sample[] DumpToConsole(this Sample[] samples, bool dumpWhileWorking)
+        public static Sample[] DumpToConsole(this Sample[] samples)
         {
-            if (!dumpWhileWorking)
-                return samples;
-
             foreach (var sample in samples)
             {
-                sample.DumpToConsole(null, false, dumpWhileWorking);
+                sample.DumpToConsole(null, false);
             }
 
             return samples;
         }
-        public static Sample DumpToConsole(this Sample sample, Matrix actualOutput, bool isCorrect, bool dumpWhileWorking)
+        public static Sample DumpToConsole(this Sample sample, Matrix actualOutput, bool isCorrect)
         {
-            if (!dumpWhileWorking)
-                return sample;
-
             Console.WriteLine("\n +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +\n");
-            sample.RawInput.DumpToConsole($"\n{nameof(sample.RawInput)} = ", dumpWhileWorking);
-            sample.Input.DumpToConsole($"\n{nameof(sample.Input)} = ", dumpWhileWorking);
-            actualOutput.DumpToConsole($"\n{nameof(actualOutput)} = ", dumpWhileWorking);
-            sample.ExpectedOutput.DumpToConsole($"\n{nameof(sample.ExpectedOutput)} = ", dumpWhileWorking);
-            Console.WriteLine($"{nameof(sample.Label)} = {sample.Label}", dumpWhileWorking);
+            sample.RawInput.DumpToConsole($"\n{nameof(sample.RawInput)} = ");
+            sample.Input.DumpToConsole($"\n{nameof(sample.Input)} = ");
+            actualOutput.DumpToConsole($"\n{nameof(actualOutput)} = ");
+            sample.ExpectedOutput.DumpToConsole($"\n{nameof(sample.ExpectedOutput)} = ");
+            Console.WriteLine($"{nameof(sample.Label)} = {sample.Label}");
             if (isCorrect)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
