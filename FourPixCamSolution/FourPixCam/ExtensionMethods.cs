@@ -52,6 +52,44 @@ namespace FourPixCam
 
         // Into ILogger?:
 
+        public static T LogIt<T>(this T obj, string title = "")//, bool isLogged = false
+        {
+            // Into Logger !
+            if (!NeurNetMath.IsLogOn)
+                return obj;
+
+            if (typeof(T) == typeof(NeuralNet))
+            {
+                (obj as NeuralNet).DumpToConsole();
+            }
+            else if (typeof(T) == typeof(Sample[]))
+            {
+                (obj as Sample[]).DumpToConsole();
+            }
+            else if (typeof(T) == typeof(Sample))
+            {
+                (obj as Sample).DumpToConsole();
+            }
+            else if (typeof(T) == typeof(Matrix))
+            {
+                (obj as Matrix).DumpToConsole(title);
+            }
+            else if (typeof(T) == typeof(float))
+            {
+                // obj as object ? (vgl: 'WriteDumpingTitle')
+                // throw new NotImplementedException();
+                Convert.ToSingle(obj).DumpToConsole(title);
+            }
+            else
+            {
+                // obj as object ? (vgl: 'WriteDumpingTitle')
+                throw new NotImplementedException();
+                // (obj as object).DumpToConsole(title);
+            }
+
+            return obj;
+        }
+
         // Dumps to a temporary html file and opens in the browser.
         public static void DumpToExplorer<T>(this T o, string title = "")
         {
@@ -110,20 +148,20 @@ namespace FourPixCam
         {
             foreach (var sample in samples)
             {
-                sample.DumpToConsole(null, false);
+                sample.DumpToConsole();
             }
 
             return samples;
         }
-        public static Sample DumpToConsole(this Sample sample, Matrix actualOutput, bool isCorrect)
+        public static Sample DumpToConsole(this Sample sample)
         {
             Console.WriteLine("\n +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +\n");
             sample.RawInput.DumpToConsole($"\n{nameof(sample.RawInput)} = ");
             sample.Input.DumpToConsole($"\n{nameof(sample.Input)} = ");
-            actualOutput.DumpToConsole($"\n{nameof(actualOutput)} = ");
+            sample.ActualOutput.DumpToConsole($"\n{nameof(sample.ActualOutput)} = ");
             sample.ExpectedOutput.DumpToConsole($"\n{nameof(sample.ExpectedOutput)} = ");
             Console.WriteLine($"{nameof(sample.Label)} = {sample.Label}");
-            if (isCorrect)
+            if (sample.IsOutputCorrect == true)
             {
                 Console.ForegroundColor = ConsoleColor.Green;
             }
@@ -131,11 +169,21 @@ namespace FourPixCam
             {
                 Console.ForegroundColor = ConsoleColor.Red;
             }
-            Console.WriteLine($"\n{nameof(isCorrect)} = {isCorrect}\n");
+            Console.WriteLine($"\n{nameof(sample.IsOutputCorrect)} = {sample.IsOutputCorrect}\n");
             Console.ResetColor();
             // Console.WriteLine(" +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +   -   +\n\n");
             return sample;
         }
+        public static object DumpToConsole(this float number, string title = "")
+        {
+            Console.WriteLine($"\n{title} = {number.ToString()}\n");
+            return number;
+        }
+        //public static object DumpToConsole(this object obj, string title = "")
+        //{
+        //    Console.WriteLine($"\n{title} = {obj.ToString()}\n");            
+        //    return obj;
+        //}
         // Dumps to debugger. Used in the HTML debug view.
         public static T DumpToHTMLDebugger<T>(this T o, out string result, string title = "")
         {

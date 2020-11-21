@@ -20,7 +20,7 @@ namespace FourPixCam
 
         #region public
 
-        public static Sample[] GetTrainingData(int sampleSize, float distortionDeviation = 0f)
+        public static Sample[] GetTrainingData(int sampleSize, float sampleTolerance, float distortionDeviation)
         {
             rnd = RandomProvider.GetThreadRandom();
 
@@ -28,6 +28,7 @@ namespace FourPixCam
             distortedInputs = GetDistortedInputs(distortionDeviation);
             validInputs = GetValidInputs(distortedInputs);
             validOutputs = GetValidOutputs();
+            Sample.Tolerance = sampleTolerance;
             validSamples = GetValidSamples();
 
             return GetValidTrainingData(sampleSize, validSamples);

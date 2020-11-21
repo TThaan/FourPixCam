@@ -105,26 +105,27 @@ namespace FourPixCam
 
             foreach (var sample in testingData.Shuffle())
             {
-                var output = learningNet.FeedForwardAndGetOutput(sample.Input, false);
-                bool isCorrect;
-
-                // param 1 = output (matrix)
-                // param 2 = tolerance (float)
-                if (sample.IsOutputCorrect(output, 0.2f))
+                // sample.HasBeenCheckedAlready = false;
+                sample.ActualOutput = learningNet.FeedForwardAndGetOutput(sample.Input);
+                
+                if (sample.IsOutputCorrect == true)
                 {
                     good++;
-                    isCorrect = true; 
                 }
                 else
                 { 
                     bad++;
-                    isCorrect = false;
                 }
-                sample.DumpToConsole(output, isCorrect);
+                sample.LogIt();
             }
             return (float)good / (good + bad);
         }
 
         #endregion
+
+        //bool IsTrue(bool? check)
+        //{
+        //    return check.HasValue && check.Value;
+        //}
     }
 }

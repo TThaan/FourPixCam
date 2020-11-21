@@ -16,6 +16,7 @@ namespace FourPixCam
             learningRate = 0.1f,
             aggregatedAccuracies,
             meanAccuracy = 0,
+            sampleTolerance = 0.2f,
             distortionDeviation = .3f;        
         static List<(int TrainingsNr, float Accuracy)> accuracies = new List<(int, float)>();
         static StreamWriter customWriter = GetCustomWriter(@"c:\temp\FourPixTest.txt");
@@ -25,6 +26,8 @@ namespace FourPixCam
 
         static void Main(string[] args)
         {
+            NeurNetMath.IsLogOn = true;
+
             aggregatedAccuracies = 0;
 
             for (int i = 0; i < trainingsCount; i++)
@@ -40,7 +43,7 @@ namespace FourPixCam
                 //net.DumpToExplorer();
                 net.DumpToConsole();
 
-                Sample[] trainingData = DataFactory.GetTrainingData(samplesCount, distortionDeviation);
+                Sample[] trainingData = DataFactory.GetTrainingData(samplesCount, sampleTolerance, distortionDeviation);
                 Sample[] testingData = DataFactory.GetTestingData(2);
 
                 float accuracy = trainer.Train(trainingData, testingData, learningRate, epochCount, standardWriter, customWriter);

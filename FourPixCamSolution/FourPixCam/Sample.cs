@@ -5,28 +5,69 @@ namespace FourPixCam
 {
     public class Sample
     {
-        public Label Label { get; set; }
-        public Matrix RawInput;
-        public Matrix Input;
-        public Matrix ExpectedOutput;
-        // public Matrix ActualOutput { get; set; }
+        #region fields
 
-        // Returns true if each output equals or is close to each expectedOutput.
-        public Func<Matrix, float, bool> IsOutputCorrect => IsOutputApproximatelyCorrect;
-            // outputMatrix => outputMatrix == ExpectedOutput;
+        bool? isOutputCorrect;
+        Matrix actualOutput;
+
+        #endregion
+
+        #region public
+
+        public static float Tolerance { get; set; }
+
+        public Label Label { get; set; }
+        public Matrix RawInput { get; set; }
+        public Matrix Input { get; set; }
+        public Matrix ExpectedOutput { get; set; }
+
+        public Matrix ActualOutput 
+        {
+            get => actualOutput;
+            set
+            {
+                // Always when 'ActualOutput' is (re)set change 'isOutputCorrect' to null.
+                isOutputCorrect = null;
+                actualOutput = value;
+            }
+        }
+        public bool? IsOutputCorrect
+        {
+            get
+            {
+                if (ActualOutput != null)
+                {
+                    if (isOutputCorrect != null)
+                    {
+                        return isOutputCorrect;
+                    }
+                    else
+                    {
+                        isOutputCorrect = IsOutputApproximatelyCorrect();
+                        return isOutputCorrect;
+                    }
+                }
+                else
+                {
+                    throw new ArgumentException("You cannot check the output when there is no actual output.");
+                }
+            }
+        }
+
+        #endregion
 
         #region helpers
 
-        bool IsOutputApproximatelyCorrect(Matrix output, float tolerance)
+        bool? IsOutputApproximatelyCorrect()
         {
-            if (output.m == ExpectedOutput.m && output.n == 1 && ExpectedOutput.n == 1)
+            if (ActualOutput.m == ExpectedOutput.m && ActualOutput.n == 1 && ExpectedOutput.n == 1)
             {
-                for (int j = 0; j < output.m; j++)
+                for (int j = 0; j < ActualOutput.m; j++)
                 {
-                    var a_j = output[j];
+                    var a_j = ActualOutput[j];
                     var t_j = ExpectedOutput[j];
                     var x = Math.Abs(t_j - a_j);
-                    if (x > tolerance)
+                    if (x > Tolerance)
                     {
                         return false;
                     }

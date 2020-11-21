@@ -64,7 +64,7 @@ namespace FourPixCam
 
         #region methods
 
-        public Matrix FeedForwardAndGetOutput(Matrix input, bool dumpWhileWorking = true)
+        public Matrix FeedForwardAndGetOutput(Matrix input)
         {
             // wa: Separate inp layer from 'layers' ?!
             A[0] = input;
@@ -72,26 +72,20 @@ namespace FourPixCam
             // iterate over layers (skip input layer)
             for (int i = 1; i < Net.LayerCount; i++)
             {
-                Z[i] = NeurNetMath.Get_z(
+                Z[i] = Get_z(
                     Net.W[i].DumpToConsole($"\nW{i} = "),
                     A[i - 1], 
-                    Net.B[i].DumpToConsole($"\nB{i} = ")).DumpToConsole($"\nZ{i} = "); //.DumpToConsole($"\nA{i-1} = ")
-                A[i] = NeurNetMath.Get_a(
-                    Z[i], 
-                    Net.Activations[i]).DumpToConsole($"\nA{i} = ");
-                if (dumpWhileWorking)
-                {
-                    Console.WriteLine("\n    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
-                }
+                    Net.B[i].DumpToConsole($"\nB{i} = "));
+                A[i] = Get_a(Z[i], Net.Activations[i]);
             }
 
             return A.Last();
         }
-        public void BackPropagate(Matrix t, float learningRate, bool dumpWhileWorking = true)
+        public void BackPropagate(Matrix t, float learningRate)
         {
             // debug
-            var c = NeurNetMath.Get_C(A[Net.LayerCount - 1], t, SquaredMeanError.CostFunction);
-            var cTotal = NeurNetMath.Get_CTotal(A[Net.LayerCount - 1], t, SquaredMeanError.CostFunction);
+            var c = Get_C(A[Net.LayerCount - 1], t, SquaredMeanError.CostFunction);
+            var cTotal = Get_CTotal(A[Net.LayerCount - 1], t, SquaredMeanError.CostFunction);
 
             Matrix[] nextW = new Matrix[Net.LayerCount];
             Matrix[] nextB = new Matrix[Net.LayerCount];
@@ -106,20 +100,18 @@ namespace FourPixCam
                 if (l == Net.LayerCount - 1)
                 {
                     // .. and C0 instead of a[i] and t as parameters here?
-                    delta = NeurNetMath.Get_deltaOutput(A[l], t, Net.CostDerivation, Z[l], Net.ActivationDerivations[l]); //
+                    delta = Get_deltaOutput(A[l], t, Net.CostDerivation, Z[l], Net.ActivationDerivations[l]);
                 }
                 else
                 {
-                    delta = NeurNetMath.Get_deltaHidden(Net.W[l + 1], Delta[l + 1], Z[l], Net.ActivationDerivations[l]);//, A[l]
+                    delta = Get_deltaHidden(Net.W[l + 1], Delta[l + 1], Z[l], Net.ActivationDerivations[l]);
                 }
 
-                Delta[l] = delta.DumpToConsole($"\ndelta{l} =");
-                nextW[l] = Get_CorrectedWeights(Net.W[l], Delta[l], A[l - 1], learningRate)
-                    .DumpToConsole($"\nnextW{l} =");
+                Delta[l] = delta;
+                nextW[l] = Get_CorrectedWeights(Net.W[l], Delta[l], A[l - 1], learningRate);
                 if (Net.IsWithBias)
                 {
-                    nextB[l] = Get_CorrectedBiases(Net.B[l], Delta[l], learningRate)
-                    .DumpToConsole($"\nnextB{l} =");
+                    nextB[l] = Get_CorrectedBiases(Net.B[l], Delta[l], learningRate);
                 }
             }
 
