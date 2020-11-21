@@ -1,7 +1,7 @@
 ﻿using MatrixHelper;
 using System;
-using System.IO;
 using System.Linq;
+using static FourPixCam.Logger;
 
 namespace FourPixCam
 {
@@ -31,50 +31,47 @@ namespace FourPixCam
 
         #region methods
         
-        public float Train(Sample[] trainingData, Sample[] testingData, float learningRate, int epochs, TextWriter standard, TextWriter custom)
+        public float Train(Sample[] trainingData, Sample[] testingData, float learningRate, int epochs)
         {
-            // Test 
-
-            Console.WriteLine($"                                    Initial Accuracy : {Test(testingData)}");
-
             var start = DateTime.Now;
-            Console.WriteLine($"\n\n                                        Training Start: {start}");
+            Log($"\n\n                                        Training Start: {start}");
+
+            // Initial Test 
+            Log($"                                    Initial Accuracy : {Test(testingData)}");
             
             for (int epoch = 0; epoch < epochs; epoch++)
             {
-                $"T R A I N I N G".WriteDumpingTitle(
-                    nameof(learningRate), learningRate,
-                    nameof(epoch), epoch,
-                    nameof(epochs), epochs);
+                LogTitle("T R A I N I N G", '*');
+                Log(learningRate, nameof(learningRate));
+                Log(epoch, nameof(epoch));
+                Log(epochs, nameof(epochs));
 
                 currentAccuracy = TrainEpoch(trainingData, testingData, learningRate, epoch);
-                Console.WriteLine($"                                    Current Accuracy : {currentAccuracy}    (eta = {learningRate})");
-                Console.SetOut(standard);
-                Console.WriteLine($"                                    Current Accuracy : {currentAccuracy}    (eta = {learningRate})");
-                Console.SetOut(custom);
+                
+                Log($"                                    Current Accuracy : {currentAccuracy}    (eta = {learningRate})", Display.ToConsoleAndFile);
 
                 learningRate *= .9f;
             }
 
-            Console.WriteLine("Finished training.");
+            Log("Finished training.");
 
             var end = DateTime.Now;
-            Console.WriteLine($"\n\n                                        Training End: {end}  (Duration: {end - start})\n");
+            Log($"\n\n                                        Training End: {end}  (Duration: {end - start})\n");
 
-            // OriginalNet.DumpToConsole(true);
-            // learningNet.Net.DumpToConsole(true);
+            // OriginalNet.Log(true);
+            // learningNet.Net.Log(true);
 
             // Log/Dump
             for (int i = 1; i < InitialNet.W.Length; i++)
             {
-                InitialNet.W[i].DumpToConsole($"\nStart  W{i}");
-                Console.WriteLine($"Whole w-layer-deviation (from 0): {InitialNet.W[i].Sum() / InitialNet.W[i].LongCount()}");
-                learningNet.Net.W[i].DumpToConsole($"\nEnd   W{i}");
-                (learningNet.Net.W[i] - InitialNet.W[i]).DumpToConsole($"\nTotal dW{i}");
+                InitialNet.W[i].Log($"\nStart  W{i}");
+                Log($"          Whole w-layer-deviation (from 0): {InitialNet.W[i].Sum() / InitialNet.W[i].LongCount()}");
+                learningNet.Net.W[i].Log($"\nEnd   W{i}");
+                (learningNet.Net.W[i] - InitialNet.W[i]).Log($"\nTotal dW{i}");
 
-                // InitialNet.B[i].DumpToConsole($"\nStart  B{i}", true);
-                // learningNet.Net.B[i].DumpToConsole($"\nEnd   B{i}", true);
-                // (learningNet.Net.B[i] - InitialNet.B[i]).DumpToConsole($"\nTotal dB{i}", true);
+                // InitialNet.B[i].Log($"\nStart  B{i}", true);
+                // learningNet.Net.B[i].Log($"\nEnd   B{i}", true);
+                // (learningNet.Net.B[i] - InitialNet.B[i]).Log($"\nTotal dB{i}", true);
             }
 
             return currentAccuracy;
@@ -84,18 +81,21 @@ namespace FourPixCam
         {
             for (int sample = 0; sample < trainingSet.Length; sample++)
             {
-                $"F E E D   F O R W A R D".WriteDumpingTitle($"epoch/sample: {epoch}/{sample}");
-                trainingSet[sample].Input.DumpToConsole($"\nA[0] = ");
-                Console.WriteLine("\n    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
+                LogTitle("F E E D   F O R W A R D", '*');
+                Log($"epoch/sample: {epoch}/{sample}");
+
+                trainingSet[sample].Input.Log($"\nA[0] = ");
+                Log("\n    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
 
                 var output = learningNet.FeedForwardAndGetOutput(trainingSet[sample].Input);
-                // trainingSet[sample].IsOutputCorrect(output);
 
-                $"B A C K P R O P A P A G A T I O N".WriteDumpingTitle($"epoch/sample: {epoch}/{sample}");
-                learningNet.BackPropagate(trainingSet[sample].ExpectedOutput.DumpToConsole("\nt ="), learningRate);   
+                LogTitle("B A C K P R O P A P A G A T I O N", '*');
+                Log($"epoch/sample: {epoch}/{sample}");
+                learningNet.BackPropagate(trainingSet[sample].ExpectedOutput.Log("\nt ="), learningRate);   
             }
 
-            "T e s t".WriteDumpingTitle($"epoch: {epoch}");
+            LogTitle("T e s t", '*');
+            Log($"epoch: {epoch}");
             return Test(testingData);
         }
         
@@ -105,7 +105,6 @@ namespace FourPixCam
 
             foreach (var sample in testingData.Shuffle())
             {
-                // sample.HasBeenCheckedAlready = false;
                 sample.ActualOutput = learningNet.FeedForwardAndGetOutput(sample.Input);
                 
                 if (sample.IsOutputCorrect == true)
@@ -116,16 +115,11 @@ namespace FourPixCam
                 { 
                     bad++;
                 }
-                sample.LogIt();
+                sample.Log();
             }
             return (float)good / (good + bad);
         }
 
         #endregion
-
-        //bool IsTrue(bool? check)
-        //{
-        //    return check.HasValue && check.Value;
-        //}
     }
 }

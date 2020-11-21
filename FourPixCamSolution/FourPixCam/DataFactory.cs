@@ -64,7 +64,6 @@ namespace FourPixCam
         {
             var result = new List<Sample>();
 
-            // int vs Label ? .Select(x => (Label)x)?
             var labels = Enum.GetValues(typeof(Label)).ToList<Label>().Skip(1); 
             foreach (var label in labels)
             {

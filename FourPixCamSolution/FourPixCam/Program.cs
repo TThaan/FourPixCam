@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.IO;
+using static FourPixCam.Logger;
 
 namespace FourPixCam
 {
@@ -14,71 +14,44 @@ namespace FourPixCam
             epochCount = 10;
         static float 
             learningRate = 0.1f,
-            aggregatedAccuracies,
+            aggregatedAccuracies = 0,
             meanAccuracy = 0,
             sampleTolerance = 0.2f,
             distortionDeviation = .3f;        
         static List<(int TrainingsNr, float Accuracy)> accuracies = new List<(int, float)>();
-        static StreamWriter customWriter = GetCustomWriter(@"c:\temp\FourPixTest.txt");
-        static TextWriter standardWriter = Console.Out;
 
         #endregion
 
         static void Main(string[] args)
         {
-            NeurNetMath.IsLogOn = true;
+            #region
 
-            aggregatedAccuracies = 0;
+            IsLogOn = true;
+            StandardDisplay = Display.ToFile;
+
+            #endregion
 
             for (int i = 0; i < trainingsCount; i++)
             {
-                Console.SetOut(standardWriter);
-                Console.WriteLine($"\n                                        T r a i n i n g {i}\n");
-                Console.SetOut(customWriter);
-                Console.WriteLine($"\n\n\n                                        T r a i n i n g {i}\n\n");
-                // Console.SetError(customWriter);
+                Log($"\n                                        T r a i n i n g {i}\n", Display.ToConsoleAndFile);
 
                 NeuralNet net = NeuralNetFactory.GetNeuralNet("Implement jsonSource later!", false);
-                Trainer trainer = new Trainer(net);
-                //net.DumpToExplorer();
-                net.DumpToConsole();
+                Trainer trainer = new Trainer(net.Log());
 
                 Sample[] trainingData = DataFactory.GetTrainingData(samplesCount, sampleTolerance, distortionDeviation);
                 Sample[] testingData = DataFactory.GetTestingData(2);
 
-                float accuracy = trainer.Train(trainingData, testingData, learningRate, epochCount, standardWriter, customWriter);
+                float accuracy = trainer.Train(trainingData, testingData, learningRate, epochCount);
 
                 accuracies.Add((i, accuracy)); 
                 aggregatedAccuracies += accuracy;
             }
 
             meanAccuracy = aggregatedAccuracies / trainingsCount;
-            Console.SetOut(customWriter);
-            Console.WriteLine($"\n                                             Finished {trainingsCount} trainings with a mean accuracy of {meanAccuracy}!\n");
-            Console.SetOut(standardWriter);
-            Console.WriteLine($"\n                                             Finished {trainingsCount} trainings with a mean accuracy of {meanAccuracy}!\n");
-
-            Console.SetOut(customWriter);
-            Console.WriteLine(accuracies.ToVerticalCollectionString());
-            Console.WriteLine();
-            Console.SetOut(standardWriter);
-            Console.WriteLine(accuracies.ToVerticalCollectionString());
-            Console.WriteLine();
+            Log($"\n                                             Finished {trainingsCount} trainings with a mean accuracy of {meanAccuracy}!\n", Display.ToConsoleAndFile);
+            Log($"\n{accuracies.ToVerticalCollectionString()}                                             \n", Display.ToConsoleAndFile);
 
             Console.ReadLine();
         }
-
-        #region helpers
-
-        static StreamWriter GetCustomWriter(string path)
-        {
-            FileStream filestream = new FileStream(path, FileMode.Create);
-            StreamWriter customWriter = new StreamWriter(filestream);
-            customWriter.AutoFlush = true;
-
-            return customWriter;
-        }
-
-        #endregion
     }
 }
