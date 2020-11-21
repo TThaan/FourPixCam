@@ -10,12 +10,10 @@ namespace FourPixCam
 
         static int
             samplesCount = 250,
-            trainingsCount = 5,
+            trainingsCount = 10,
             epochCount = 10;
         static float 
             learningRate = 0.1f,
-            aggregatedAccuracies = 0,
-            meanAccuracy = 0,
             sampleTolerance = 0.2f,
             distortionDeviation = .3f;        
         static List<(int TrainingsNr, float Accuracy)> accuracies = new List<(int, float)>();
@@ -31,7 +29,23 @@ namespace FourPixCam
 
             #endregion
 
-            for (int i = 0; i < trainingsCount; i++)
+            for (int i = 0; i < 10; i++)
+            {
+                learningRate *= 1.25f;
+                TrainNTimes(trainingsCount);
+            }
+
+            Log($"\n{accuracies.ToVerticalCollectionString()}                                             \n", Display.ToConsoleAndFile);
+            Console.ReadLine();
+        }
+
+        private static void TrainNTimes(int _trainingsCount)
+        {
+            float
+                aggregatedAccuracies = 0,
+                meanAccuracy = 0;
+
+            for (int i = 0; i < _trainingsCount; i++)
             {
                 Log($"\n                                        T r a i n i n g {i}\n", Display.ToConsoleAndFile);
 
@@ -43,15 +57,12 @@ namespace FourPixCam
 
                 float accuracy = trainer.Train(trainingData, testingData, learningRate, epochCount);
 
-                accuracies.Add((i, accuracy)); 
+                accuracies.Add((i, accuracy));
                 aggregatedAccuracies += accuracy;
             }
 
             meanAccuracy = aggregatedAccuracies / trainingsCount;
             Log($"\n                                             Finished {trainingsCount} trainings with a mean accuracy of {meanAccuracy}!\n", Display.ToConsoleAndFile);
-            Log($"\n{accuracies.ToVerticalCollectionString()}                                             \n", Display.ToConsoleAndFile);
-
-            Console.ReadLine();
         }
     }
 }
