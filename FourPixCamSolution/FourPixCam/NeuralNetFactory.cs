@@ -79,7 +79,7 @@ namespace FourPixCam
         }
         static Func<float, float>[] GetActivationDerivations(string jsonSource)
         {
-            // Get from jsonSource later.
+            // Get from jsonSource later.. no, conclude from activations!
 
             return new Func<float, float>[]
             {
