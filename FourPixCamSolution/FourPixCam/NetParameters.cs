@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.Collections.ObjectModel;
 
 namespace FourPixCam
 {
@@ -18,13 +19,13 @@ namespace FourPixCam
             WeightMax = 1;
             BiasMin = -1;
             BiasMax = 1;
-            Layers = new List<Layer>()
+            Layers = new ObservableCollection<Layer>()
             {
-                new Layer{ N=4, ActivationType=ActivationType.None},
-                new Layer{ N=4, ActivationType=ActivationType.Tanh},
-                new Layer{ N=4, ActivationType=ActivationType.Tanh},
-                new Layer{ N=8, ActivationType=ActivationType.ReLU},
-                new Layer{ N=4, ActivationType=ActivationType.Tanh}
+                new Layer{ Id= 0, N=4, ActivationType=ActivationType.None},
+                new Layer{ Id= 1, N=4, ActivationType=ActivationType.Tanh},
+                new Layer{ Id= 2, N=4, ActivationType=ActivationType.Tanh},
+                new Layer{ Id= 3, N=8, ActivationType=ActivationType.ReLU},
+                new Layer{ Id= 4, N=4, ActivationType=ActivationType.Tanh}
             };
             CostType = CostType.SquaredMeanError;
             WeightInitType = WeightInitType.Xavier;
@@ -34,7 +35,7 @@ namespace FourPixCam
 
         #region public
 
-        public List<Layer> Layers { get; set; }
+        public ObservableCollection<Layer> Layers { get; set; }
         public bool IsWithBias { get; set; }
         public float WeightMin { get; set; }
         public float WeightMax { get; set; }
