@@ -1,14 +1,13 @@
-﻿using FourPixCam.Activators;
-using System;
+﻿using System;
 
 namespace FourPixCam.WeightInits
 {
     public class Xavier
     {
-        public static float Init(float weight, int n, Type activationType)
+        public static float Init(float weight, int n, ActivationType activationType)
         {
-            if (activationType == typeof(ReLU) ||
-                activationType == typeof(LeakyReLU))
+            if (activationType == ActivationType.ReLU ||
+                activationType == ActivationType.LeakyReLU)
             {
                 return ForRelu(weight, n);
             }

@@ -1,5 +1,6 @@
 ﻿using FourPixCam.CostFunctions;
 using MatrixHelper;
+using System;
 using System.Linq;
 using static FourPixCam.NeurNetMath;
 
@@ -7,15 +8,16 @@ namespace FourPixCam
 {
     public class LearningNet
     {
-        #region ctor
+        #region ctor & fields
 
-        public LearningNet(NeuralNet net)      // param jasonFile
+        Layer[] _layers;
+
+        public LearningNet(NeuralNet net)
         {
-            Net = net;
-            Z = new Matrix[net.LayerCount];
-            A = new Matrix[net.LayerCount];
-            dadz_OfLayer = new Matrix[net.LayerCount];
-            Delta = new Matrix[net.LayerCount];
+            Net = net ??
+                throw new NullReferenceException($"{typeof(NeuralNet).Name} {nameof(net)} " +
+                $"({GetType().Name}.ctor)");
+            _layers = net.Layers.ToArray();
         }
 
         #endregion
@@ -23,31 +25,18 @@ namespace FourPixCam
         #region properties
 
         public NeuralNet Net { get; }
-        public Matrix[] Z { get; set; }
-        public Matrix[] A { get; set; }
-        public Matrix[] dadz_OfLayer { get; set; }
-        public Matrix[] Delta { get; set; }
+        // public Matrix[] Z { get; set; }
+        // public Matrix[] A { get; set; }
+        // public Matrix[] Delta { get; set; }
 
         #endregion
 
         #region methods
 
+        // redundant?
         public Matrix FeedForwardAndGetOutput(Matrix input)
         {
-            // wa: Separate inp layer from 'layers' ?!
-            A[0] = input;
-
-            // iterate over layers (skip input layer)
-            for (int i = 1; i < Net.LayerCount; i++)
-            {
-                Z[i] = Get_z(
-                    Net.W[i].Log($"\nW{i} = "),
-                    A[i - 1], 
-                    Net.B[i].Log($"\nB{i} = "));
-                A[i] = Get_a(Z[i], Net.Activations[i]);
-            }
-
-            return A.Last();
+            return Net.FeedForward(input);
         }
         public void BackPropagate(Matrix t, float learningRate)
         {
@@ -63,16 +52,6 @@ namespace FourPixCam
             {
                 Matrix delta;
 
-                if (l == Net.LayerCount - 1)
-                {
-                    delta = Get_deltaOutput(A[l], t, Net.CostDerivation, Z[l], Net.ActivationDerivations[l]);
-                }
-                else
-                {
-                    delta = Get_deltaHidden(Net.W[l + 1], Delta[l + 1], Z[l], Net.ActivationDerivations[l]);
-                }
-
-                Delta[l] = delta;
                 nextW[l] = Get_CorrectedWeights(Net.W[l], Delta[l], A[l - 1], learningRate);
                 if (Net.IsWithBias)
                 {

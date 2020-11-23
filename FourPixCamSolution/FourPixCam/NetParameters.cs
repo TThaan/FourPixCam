@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using FourPixCam.WeightInits;
+using System;
 using System.Collections.ObjectModel;
 
 namespace FourPixCam
@@ -8,6 +9,12 @@ namespace FourPixCam
     /// </summary>
     public class NetParameters
     {
+        #region fields
+
+        Func<float, int, ActivationType, float> weightInit;
+
+        #endregion
+
         #region ctor
 
         public NetParameters()
@@ -43,6 +50,28 @@ namespace FourPixCam
         public float BiasMax { get; set; }
         public CostType CostType { get; set; }
         public WeightInitType WeightInitType { get; set; }
+
+        public Func<float, int, ActivationType, float> WeightInit => weightInit = default
+            ? weightInit = GetWeightInit()
+            : weightInit;
+
+        #endregion
+
+        #region helpers
+
+        // better in factory?
+        Func<float, int, ActivationType, float> GetWeightInit()
+        {
+            switch (WeightInitType)
+            {
+                case WeightInitType.None:
+                    return default;
+                case WeightInitType.Xavier:
+                    return Xavier.Init;
+                default:
+                    return default;
+            }
+        }
 
         #endregion
     }
