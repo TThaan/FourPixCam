@@ -51,7 +51,7 @@ namespace FourPixCam
         public CostType CostType { get; set; }
         public WeightInitType WeightInitType { get; set; }
 
-        public Func<float, int, ActivationType, float> WeightInit => weightInit = default
+        public Func<float, int, ActivationType, float> WeightInit => weightInit == default
             ? weightInit = GetWeightInit()
             : weightInit;
 

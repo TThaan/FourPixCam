@@ -17,11 +17,24 @@ namespace FourPixCam
         int layerCount;
         Func<float, float, float> cost, costDerivation; // Redundant? (Not saving values here but refs to methods!)
 
+        // Only needed if ProcessingNet is a child class:
+        public NeuralNet(NeuralNet net)
+        {
+
+        }
         public NeuralNet(ObservableCollection<Layer> layers, CostType costType)
         {
             Layers = layers ??
                 throw new NullReferenceException($"{typeof(ObservableCollection<Layer>).Name} {nameof(layers)} " +
                 $"({GetType().Name}.ctor)");
+
+            for (int i = 1; i < LayersCount; i++)
+            {
+                Layers[i].Processed.ReceptiveField = Layers[i - 1];
+                Layers[i-1].Processed.ProjectiveField = Layers[i];
+            }
+
+            CostType = costType;
 
             // Define cost and costDerivation here?!
         }
@@ -31,34 +44,21 @@ namespace FourPixCam
         #region public
 
         public ObservableCollection<Layer> Layers { get; set; }
-        public int LayerCount => layerCount = default
+        public int LayersCount => layerCount == default
             ? layerCount = Layers.Count
             : layerCount;
         public CostType CostType { get; set; }
         // Redundant? (Not saving values here but refs to methods!):
-        public Func<float, float, float> Cost => cost = default
+        public Func<float, float, float> Cost => cost == default
             ? cost = GetCost()
             : cost;
         // Redundant? (Not saving values here but refs to methods!):
-        public Func<float, float, float> CostDerivation => costDerivation = default
+        public Func<float, float, float> CostDerivation => costDerivation == default
             ? costDerivation = GetCostDerivation()
             : costDerivation;
 
         public Matrix FeedForward(Matrix input)
         {
-            //Layers[0].Processed.Input = input;
-
-            //foreach (var layer in Layers)
-            //{
-            //    if (layer.Id > 0)
-            //    {
-            //        layer.Processed.Input = Get_z(layer.Weights, 
-            //            Layers.Single(x => x.Id == layer.Id - 1).Processed.Input, // use ReceptiveField?
-            //            layer.Biases);
-            //    }
-            //    layer.Processed.Output = Get_a(layer.Processed.Input, layer.Activation);
-            //}
-
             Layers[0].Processed.ProcessInput(input);
             return Layers.Last().Processed.Output;
         }
@@ -66,9 +66,13 @@ namespace FourPixCam
         /// 
         /// </summary>
         /// <returns>cost matrix?</returns>
-        public void PropagateBack(Matrix expectedOutput)
+        public void PropagateBack(Matrix expectedOutput, float learningRate)
         {
-            Layers.Last().Processed.ProcessCost(expectedOutput, CostDerivation);
+            Layers.Last().Processed.ProcessCost(expectedOutput, CostDerivation, learningRate);
+        }
+        public void AdaptWeightsAndBiases(float learningRate)
+        {
+            
         }
 
         #endregion

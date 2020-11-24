@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using static FourPixCam.Logger;
 
 namespace FourPixCam
@@ -14,13 +13,11 @@ namespace FourPixCam
         NetParameters netParameters;
         int
             samplesCount = 250,
-            trainingsCount = 10,
             epochCount = 10;
         float
             learningRate = 0.1f,
             sampleTolerance = 0.2f,
             distortionDeviation = .3f;
-        List<(int TrainingsNr, float Accuracy)> accuracies = new List<(int, float)>();
 
         public Initializer(NetParameters netParameters)
         {
@@ -34,45 +31,30 @@ namespace FourPixCam
         {
             #region Logger
 
+            ConsoleAllocator.ShowConsoleWindow();
             IsLogOn = true;
             StandardDisplay = Display.ToFile;
 
             #endregion
 
-            for (int i = 0; i < 10; i++)
-            {
-                learningRate *= 1.25f;
-                TrainNTimes(trainingsCount);
-            }
+            var start = DateTime.Now.Log("\n\n                                        Training Start: ", Display.ToConsoleAndFile);
 
-            Log($"\n{accuracies.ToVerticalCollectionString()}                                             \n", Display.ToConsoleAndFile);
-            Console.ReadLine();
+            NeuralNet net = NeuralNetFactory.GetNeuralNet(netParameters);
+            Train(net);
+
+            var end = DateTime.Now.Log($"\n\n                                        Training End: \n", Display.ToConsoleAndFile);
+            var duration = (end - start).Log($"Duration: ", Display.ToConsoleAndFile);
         }
 
-        void TrainNTimes(int _trainingsCount)
+        void Train(NeuralNet net)   // data(Parameters) as parameter?
         {
-            float
-                aggregatedAccuracies = 0,
-                meanAccuracy = 0;
+            Log($"\n                                        T r a i n i n g \n", Display.ToConsoleAndFile);
 
-            for (int i = 0; i < _trainingsCount; i++)
-            {
-                Log($"\n                                        T r a i n i n g {i}\n", Display.ToConsoleAndFile);
+            Trainer trainer = new Trainer(net.Log());
+            Sample[] trainingData = DataFactory.GetTrainingData(samplesCount, sampleTolerance, distortionDeviation);
+            Sample[] testingData = DataFactory.GetTestingData(2);
 
-                NeuralNet net = NeuralNetFactory.GetNeuralNet(netParameters);
-                Trainer trainer = new Trainer(net.Log());
-
-                Sample[] trainingData = DataFactory.GetTrainingData(samplesCount, sampleTolerance, distortionDeviation);
-                Sample[] testingData = DataFactory.GetTestingData(2);
-
-                float accuracy = trainer.Train(trainingData, testingData, learningRate, epochCount);
-
-                accuracies.Add((i, accuracy));
-                aggregatedAccuracies += accuracy;
-            }
-
-            meanAccuracy = aggregatedAccuracies / trainingsCount;
-            Log($"\n                                             Finished {trainingsCount} trainings with a mean accuracy of {meanAccuracy}!\n", Display.ToConsoleAndFile);
+            trainer.Train(trainingData, testingData, learningRate, epochCount);
         }
     }
 }

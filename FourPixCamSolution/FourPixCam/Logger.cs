@@ -3,6 +3,7 @@ using MatrixHelper;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 
 namespace FourPixCam
 {
@@ -154,6 +155,16 @@ namespace FourPixCam
                 Console.Write(prefix);
                 Console.WriteLine(obj as string);
             }
+            else if (typeof(T) == typeof(DateTime))
+            {
+                Console.Write(prefix);
+                Console.WriteLine((DateTime)(object)obj);
+            }
+            else if (typeof(T) == typeof(TimeSpan))
+            {
+                Console.Write(prefix);
+                Console.WriteLine((TimeSpan)(object)obj);
+            }
             else
             {
                 throw new NotImplementedException();
@@ -165,26 +176,25 @@ namespace FourPixCam
 
             Log($"\n                                    T H E   N E U R A L   N E T");
             Log($"                                  - - - - - - - - - - - - - - - -\n");
-            Log($"                                    NeuronsPerLayer : {net.NeuronsPerLayer.ToCollectionString()}");
-            Log($"                                    IsWithBias      : {net.IsWithBias}\n");
+            Log($"                                    NeuronsPerLayer : {net.Layers.Select(x=>x.N).ToCollectionString()}");
 
-            for (int i = 0; i < net.LayerCount; i++)
+            for (int i = 0; i < net.LayersCount; i++)
             {
-                //Console.WriteLine($"    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   \n");
+                Console.WriteLine($"    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   \n");
                 Log($"\n                                            L a y e r  {i}");
                 Log($"                                  - - - - - - - - - - - - - - - -\n");
-                Log($"                                    Neurons   : {net.NeuronsPerLayer[i]}");
-                Log($"                                    Activator : {net.Activations[i]?.Method.DeclaringType.Name}");
+                Log($"                                    Neurons   : {net.Layers[i].N}");
+                Log($"                                    Activator : {net.Layers[i].ActivationType}");
 
-                Matrix w = net.W[i];
+                Matrix w = net.Layers[i].Weights;
                 if (w != null)
                 {
                     w.Log($"\nw = ");
                 }
 
-                if (net.IsWithBias)
+                if (net.Layers[i].Biases != null)
                 {
-                    Matrix b = net.B[i];
+                    Matrix b = net.Layers[i].Biases;
                     b.Log($"\nb = ");
                 }
             }

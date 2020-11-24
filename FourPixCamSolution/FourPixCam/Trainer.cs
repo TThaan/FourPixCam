@@ -1,7 +1,4 @@
-﻿using MatrixHelper;
-using System;
-using System.Linq;
-using static FourPixCam.Logger;
+﻿using static FourPixCam.Logger;
 
 namespace FourPixCam
 {
@@ -9,33 +6,22 @@ namespace FourPixCam
     {
         #region ctor & fields
 
-        Random rnd;
         float currentAccuracy;
-        LearningNet learningNet;
+        NeuralNet InitialNet { get; }
+        //ProcessingNet processingNet;
 
         public Trainer(NeuralNet net)
         {
-            InitialNet = net.GetCopy();
-            learningNet = new LearningNet(net);
-
-            rnd = RandomProvider.GetThreadRandom();
+            InitialNet = net;//.GetCopy()
+            //processingNet = new ProcessingNet();//net
         }
 
         #endregion
 
-        #region properties
-
-        public NeuralNet InitialNet { get; }
-
-        #endregion
-
-        #region methods
+        #region public
         
         public float Train(Sample[] trainingData, Sample[] testingData, float learningRate, int epochs)
         {
-            var start = DateTime.Now;
-            Log($"\n\n                                        Training Start: {start}");
-
             // Initial Test 
             Log($"                                    Initial Accuracy : {Test(testingData)}");
             
@@ -46,36 +32,18 @@ namespace FourPixCam
                 Log(epoch, nameof(epoch));
                 Log(epochs, nameof(epochs));
 
-                currentAccuracy = TrainEpoch(trainingData, testingData, learningRate, epoch);
-                
+                currentAccuracy = TrainEpoch(trainingData, testingData, learningRate, epoch);                
                 Log($"                                    Current Accuracy : {currentAccuracy}    (eta = {learningRate})", Display.ToConsoleAndFile);
-
                 learningRate *= .9f;
             }
 
-            Log("Finished training.");
-
-            var end = DateTime.Now;
-            Log($"\n\n                                        Training End: {end}  (Duration: {end - start})\n");
-
-            // OriginalNet.Log(true);
-            // learningNet.Net.Log(true);
-
-            // Log/Dump
-            for (int i = 1; i < InitialNet.W.Length; i++)
-            {
-                InitialNet.W[i].Log($"\nStart  W{i}");
-                Log($"          Whole w-layer-deviation (from 0): {InitialNet.W[i].Sum() / InitialNet.W[i].LongCount()}");
-                learningNet.Net.W[i].Log($"\nEnd   W{i}");
-                (learningNet.Net.W[i] - InitialNet.W[i]).Log($"\nTotal dW{i}");
-
-                // InitialNet.B[i].Log($"\nStart  B{i}", true);
-                // learningNet.Net.B[i].Log($"\nEnd   B{i}", true);
-                // (learningNet.Net.B[i] - InitialNet.B[i]).Log($"\nTotal dB{i}", true);
-            }
-
+            Log("Finished training.", Display.ToConsoleAndFile);
             return currentAccuracy;
         }
+
+        #endregion
+
+        #region helpers
 
         float TrainEpoch(Sample[] trainingSet, Sample[] testingData, float learningRate, int epoch)
         {
@@ -87,32 +55,32 @@ namespace FourPixCam
                 trainingSet[sample].Input.Log($"\nA[0] = ");
                 Log("\n    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
 
-                var output = learningNet.FeedForwardAndGetOutput(trainingSet[sample].Input);
+                var output = InitialNet.FeedForward(trainingSet[sample].Input);
 
                 LogTitle("B A C K P R O P A P A G A T I O N", '*');
                 Log($"epoch/sample: {epoch}/{sample}");
-                learningNet.BackPropagate(trainingSet[sample].ExpectedOutput.Log("\nt ="), learningRate);   
+                InitialNet.PropagateBack(trainingSet[sample].ExpectedOutput.Log("\nt ="), learningRate);
+                // InitialNet.AdaptWeightsAndBiases(learningRate);
             }
 
             LogTitle("T e s t", '*');
             Log($"epoch: {epoch}");
             return Test(testingData);
         }
-        
         float Test(Sample[] testingData)
         {
             int bad = 0, good = 0;
 
             foreach (var sample in testingData.Shuffle())
             {
-                sample.ActualOutput = learningNet.FeedForwardAndGetOutput(sample.Input);
-                
+                sample.ActualOutput = InitialNet.FeedForward(sample.Input);
+
                 if (sample.IsOutputCorrect == true)
                 {
                     good++;
                 }
                 else
-                { 
+                {
                     bad++;
                 }
                 sample.Log();

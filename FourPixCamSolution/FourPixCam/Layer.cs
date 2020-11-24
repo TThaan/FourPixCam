@@ -10,9 +10,14 @@ namespace FourPixCam
     /// </summary>
     public class Layer
     {
-        #region fields
+        #region ctor & fields
 
         Func<float, float> activation, activationDerivation;
+
+        public Layer()
+        {
+            Processed = new Processed(this);
+        }
 
         #endregion
 
@@ -21,10 +26,10 @@ namespace FourPixCam
         public int Id { get; internal set; }
         public int N { get; set; }
         public ActivationType ActivationType { get; set; } = ActivationType.ReLU;
-        public Func<float, float> Activation => activation = default 
+        public Func<float, float> Activation => activation == default 
             ? activation = GetActivation() 
             : activation;
-        public Func<float, float> ActivationDerivation => activationDerivation = default
+        public Func<float, float> ActivationDerivation => activationDerivation == default
             ? activationDerivation = GetActivationDerivation()
             : activationDerivation;
         public Matrix Weights { get; set; }
@@ -32,7 +37,7 @@ namespace FourPixCam
 
         #endregion
 
-        public Processed Processed { get; set; }
+        public Processed Processed { get; set; }        // as child class?
 
         #region helpers
 
@@ -93,7 +98,7 @@ namespace FourPixCam
     /// <summary>
     /// Layer logic & fluent data.
     /// </summary>
-    public class Processed
+    public class Processed  // : IDisposable
     {
         #region ctor & fields
 
@@ -133,34 +138,61 @@ namespace FourPixCam
 
         // Wa: diff weight/bias range for diff layer?
 
-        public void ProcessInput(Matrix input)
+        public void ProcessInput(Matrix unweightedInput)
         {
-            Input = Get_z(_layer.Weights, ReceptiveField.Processed.Input, _layer.Biases);
-            Output = Get_a(_layer.Processed.Input, _layer.Activation);
+            if (ReceptiveField == null)
+            {
+                Input = unweightedInput;
+                Output = unweightedInput;
+            }
+            else
+            {
+                Input = Get_z(_layer.Weights, unweightedInput, _layer.Biases);
+                Output = Get_a(Input, _layer.Activation);
+            }
+
             if (ProjectiveField != null)
             {
                 ProjectiveField.Processed.ProcessInput(Output);
             }
-            // return 
+            // return.. 
         }
-        // wa: compute last layer/cost separately (maybe in NeuralNet)
-        // and use 'ProcessCost(..)' only for Delta passing (not expected output)?
-        public void ProcessCost(Matrix expectedOutput, Func<float, float, float> costDerivation)
+        public void ProcessCost(Matrix expectedOutput, Func<float, float, float> costDerivation, float learningRate)
         {
             if (ProjectiveField != null) 
                 throw new ArgumentException("'ProcessCost(..)' can only be called in the output layer.");
             
-            Delta = Get_deltaOutput(Output, expectedOutput, costDerivation, Output, _layer.ActivationDerivation);
-            ReceptiveField.Processed.ProcessDelta();
-            // return 
+            Delta = Get_deltaOutput(Output, expectedOutput, costDerivation, Input, _layer.ActivationDerivation);
+            AdaptWeightsAndBiases(learningRate);
+            ReceptiveField.Processed.ProcessDelta(learningRate);
+
+            // return.. 
         }
-        void ProcessDelta()
+
+        #region helpers
+
+        void ProcessDelta(float learningRate)
         {
             if (ProjectiveField == null)
                 throw new ArgumentException("'ProcessDelta(..)' can only be called in a hidden layer.");
-            Delta = Get_deltaHidden(ProjectiveField.Weights, ProjectiveField.Processed.Delta, Output, _layer.ActivationDerivation);
+
             if (ReceptiveField != null)
-                ReceptiveField.Processed.ProcessDelta();
+            {
+                Delta = Get_deltaHidden(ProjectiveField.Weights, ProjectiveField.Processed.Delta, Input, _layer.ActivationDerivation);
+                AdaptWeightsAndBiases(learningRate);
+                ReceptiveField.Processed.ProcessDelta(learningRate);
+            }
         }
+        void AdaptWeightsAndBiases(float learningRate)
+        {
+            _layer.Weights = Get_CorrectedWeights(_layer.Weights, Delta, _layer.Processed.ReceptiveField.Processed.Output, learningRate);
+            
+            if (_layer.Biases != null)
+            {
+                _layer.Biases = Get_CorrectedBiases(_layer.Biases, Delta, learningRate);
+            }
+        }
+        
+        #endregion
     }
 }

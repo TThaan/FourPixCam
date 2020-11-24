@@ -12,8 +12,16 @@ namespace FourPixCam
         /// </summary>
         public static Matrix Get_z(Matrix w, Matrix a, Matrix b)
         {
-            return (ScalarProduct(w, a) + b)
-                .Log($"\nZ = ");
+            if (b == null)
+            {
+                return ScalarProduct(w, a)
+                    .Log($"\nZ = ");
+            }
+            else
+            {
+                return (ScalarProduct(w, a) + b)
+                    .Log($"\nZ = ");
+            }                
         }
         /// <summary>
         /// Activation function of the weighted input a=f(z).
@@ -73,7 +81,9 @@ namespace FourPixCam
         /// <param name="a">l-1</param>
         public static Matrix Get_CorrectedWeights(Matrix w, Matrix delta, Matrix a, float learningRate)
         {
-            return w - learningRate * (delta*a.Transpose)
+            Matrix result = new Matrix(w.m, w.n);
+            result = w - learningRate * (delta * a.Transpose);
+            return result
                 .Log($"\nnextW =");
         }
         /// <param name="b">l</param>
