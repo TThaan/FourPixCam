@@ -1,4 +1,8 @@
-﻿using System;
+﻿using Microsoft.AspNetCore.Http;
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using static FourPixCam.Logger;
 
 namespace FourPixCam
@@ -24,10 +28,35 @@ namespace FourPixCam
             this.netParameters = netParameters ?? throw new NullReferenceException(
                     $"{typeof(NetParameters).Name} {nameof(netParameters)} ({GetType().Name}.ctor)");
         }
+        public Initializer(NetParameters netParameters, string dataAsJson)
+            :this(netParameters)
+        {
+            
+        }
+        public Initializer(NetParameters netParameters, List<IFormFile> files)
+            : this(netParameters)
+        {
+            long size = files.Sum(x => x.Length);
+            var filePaths = new List<string>();
+            foreach (var formFile in files)
+            {
+                if (formFile.Length > 0)
+                {
+                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles", formFile.FileName);
+                    filePaths.Add(filePath);
+
+                    using (var stream = new FileStream(filePath, FileMode.Create))
+                    {
+                        // await formFile.CopyToAsync(stream);
+                        formFile.CopyTo(stream);
+                    }
+                }
+            }
+        }
 
         #endregion
 
-        public void Run()
+        public void Run(bool turnBased = false)
         {
             #region Logger
 

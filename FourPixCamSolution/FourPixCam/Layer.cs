@@ -8,22 +8,24 @@ namespace FourPixCam
     /// <summary>
     /// Layer data.
     /// </summary>
+    [Serializable]
     public class Layer
     {
         #region ctor & fields
 
+        Processed processed;
         Func<float, float> activation, activationDerivation;
 
         public Layer()
         {
-            Processed = new Processed(this);
+            
         }
 
         #endregion
 
         #region public
 
-        public int Id { get; internal set; }
+        public int Id { get; set; }
         public int N { get; set; }
         public ActivationType ActivationType { get; set; } = ActivationType.ReLU;
         public Func<float, float> Activation => activation == default 
@@ -37,7 +39,7 @@ namespace FourPixCam
 
         #endregion
 
-        public Processed Processed { get; set; }        // as child class?
+        public Processed Processed => processed == null ? (processed = new Processed(this)) : processed;    // as child class?
 
         #region helpers
 
@@ -93,11 +95,12 @@ namespace FourPixCam
         #endregion
     }
 
-
+    // Processed data should be observed (optionally) ?
 
     /// <summary>
     /// Layer logic & fluent data.
     /// </summary>
+    [Serializable]
     public class Processed  // : IDisposable
     {
         #region ctor & fields
@@ -112,6 +115,14 @@ namespace FourPixCam
             Output = new Matrix(layer.N);
             Input = new Matrix(layer.N);
             Delta = new Matrix(layer.N);
+            
+            for (int j = 0; j < Input.m; j++)
+            {
+                for (int k = 0; k < Input.n; k++)
+                {
+                    Input[j,k] = (float)new Random().NextDouble();
+                }
+            }
         }
 
         #endregion

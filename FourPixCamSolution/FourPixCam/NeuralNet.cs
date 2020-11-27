@@ -22,7 +22,7 @@ namespace FourPixCam
         {
 
         }
-        public NeuralNet(ObservableCollection<Layer> layers, CostType costType)
+        public NeuralNet(Layer[] layers, CostType costType)
         {
             Layers = layers ??
                 throw new NullReferenceException($"{typeof(ObservableCollection<Layer>).Name} {nameof(layers)} " +
@@ -43,9 +43,9 @@ namespace FourPixCam
 
         #region public
 
-        public ObservableCollection<Layer> Layers { get; set; }
+        public Layer[] Layers { get; set; }
         public int LayersCount => layerCount == default
-            ? layerCount = Layers.Count
+            ? layerCount = Layers.Length
             : layerCount;
         public CostType CostType { get; set; }
         // Redundant? (Not saving values here but refs to methods!):

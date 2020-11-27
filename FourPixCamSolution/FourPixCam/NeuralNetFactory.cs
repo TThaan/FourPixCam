@@ -26,10 +26,10 @@ namespace FourPixCam
 
             return new NeuralNet(netParameters.Layers, netParameters.CostType);
         }
-        public static NeuralNet GetCopy(this NeuralNet net)
-        {
-            return new NeuralNet(new ObservableCollection<Layer>(net.Layers), net.CostType);
-        }
+        //public static NeuralNet GetCopy(this NeuralNet net)
+        //{
+        //    return new NeuralNet(new Layer[](net.Layers), net.CostType);
+        //}
 
         #endregion
 
@@ -38,7 +38,7 @@ namespace FourPixCam
         static void SetWeights(NetParameters netParameters)
         {
             // Iterate over layers (skip first layer).
-            for (int l = 1; l < netParameters.Layers.Count; l++)
+            for (int l = 1; l < netParameters.Layers.Length; l++)
             {
                 Matrix weights = new Matrix(
                     netParameters.Layers[l].N, 
@@ -63,7 +63,7 @@ namespace FourPixCam
                 return;
 
             // Iterate over layers (skip first layer).
-            for (int l = 1; l < netParameters.Layers.Count; l++)
+            for (int l = 1; l < netParameters.Layers.Length; l++)
             {
                 Matrix biases = new Matrix(netParameters.Layers[l].N);
 

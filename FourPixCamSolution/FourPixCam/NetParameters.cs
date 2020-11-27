@@ -1,12 +1,12 @@
 ﻿using FourPixCam.WeightInits;
 using System;
-using System.Collections.ObjectModel;
 
 namespace FourPixCam
 {
     /// <summary>
     /// Model for UI
     /// </summary>
+    [Serializable]
     public class NetParameters
     {
         #region fields
@@ -19,14 +19,20 @@ namespace FourPixCam
 
         public NetParameters()
         {
-            // Default Values:
+            // Default Values (Redundant, only wanted in/for UI?):
+            // SetDefaultValues();
+        }
 
+        #region helpers
+
+        void SetDefaultValues()
+        {
             IsWithBias = false;
             WeightMin = -1;
             WeightMax = 1;
             BiasMin = -1;
             BiasMax = 1;
-            Layers = new ObservableCollection<Layer>()
+            Layers = new[]
             {
                 new Layer{ Id= 0, N=4, ActivationType=ActivationType.None},
                 new Layer{ Id= 1, N=4, ActivationType=ActivationType.Tanh},
@@ -40,9 +46,11 @@ namespace FourPixCam
 
         #endregion
 
+        #endregion
+
         #region public
 
-        public ObservableCollection<Layer> Layers { get; set; }
+        public Layer[] Layers { get; set; }
         public bool IsWithBias { get; set; }
         public float WeightMin { get; set; }
         public float WeightMax { get; set; }
