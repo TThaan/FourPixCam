@@ -15,7 +15,7 @@ namespace FourPixCam
         #region public
 
         public static float Tolerance { get; set; }
-
+        // Generalize?
         public Label Label { get; set; }
         public Matrix RawInput { get; set; }
         public Matrix Input { get; set; }

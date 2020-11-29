@@ -19,10 +19,11 @@ namespace FourPixCam
             samplesCount = 250,
             epochCount = 10;
         float
-            learningRate = 0.1f,
-            sampleTolerance = 0.2f,
+            learningRate = .1f,
+            sampleTolerance = .2f,
             distortionDeviation = .3f;
-
+        Sample[] _trainingData, _testingData;
+        
         public Initializer(NetParameters netParameters)
         {
             this.netParameters = netParameters ?? throw new NullReferenceException(
@@ -33,31 +34,21 @@ namespace FourPixCam
         {
             
         }
-        public Initializer(NetParameters netParameters, List<IFormFile> files)
-            : this(netParameters)
-        {
-            long size = files.Sum(x => x.Length);
-            var filePaths = new List<string>();
-            foreach (var formFile in files)
-            {
-                if (formFile.Length > 0)
-                {
-                    string filePath = Path.Combine(Directory.GetCurrentDirectory(), "UploadedFiles", formFile.FileName);
-                    filePaths.Add(filePath);
-
-                    using (var stream = new FileStream(filePath, FileMode.Create))
-                    {
-                        // await formFile.CopyToAsync(stream);
-                        formFile.CopyTo(stream);
-                    }
-                }
-            }
-        }
 
         #endregion
 
-        public void Run(bool turnBased = false)
+        /// <summary>
+        /// Order:
+        /// Url_TrainingLabels, string Url_TrainingImages, string Url_TestingLabels, string Url_TestingImages
+        /// </summary>
+        public void Run(bool turnBased = false, params string[] urls)
         {
+            // define data
+            //_trainingData = GetData(trainingData);  // in DataFactory -> possible: 1d&2d(&3d) byte arrays, img, 
+            //_testingData = GetData(testingData);    // in DataFactory
+
+
+
             #region Logger
 
             ConsoleAllocator.ShowConsoleWindow();
@@ -80,10 +71,10 @@ namespace FourPixCam
             Log($"\n                                        T r a i n i n g \n", Display.ToConsoleAndFile);
 
             Trainer trainer = new Trainer(net.Log());
-            Sample[] trainingData = DataFactory.GetTrainingData(samplesCount, sampleTolerance, distortionDeviation);
-            Sample[] testingData = DataFactory.GetTestingData(2);
+            // _trainingData = DataFactory.GetTrainingData(samplesCount, sampleTolerance, distortionDeviation);
+            // _testingData = DataFactory.GetTestingData(2);
 
-            trainer.Train(trainingData, testingData, learningRate, epochCount);
+            trainer.Train(_trainingData, _testingData, learningRate, epochCount);
         }
     }
 }
