@@ -1,5 +1,6 @@
 ﻿using LINQPad;
 using MatrixHelper;
+using NNet_InputProvider;
 using System;
 using System.Diagnostics;
 using System.IO;

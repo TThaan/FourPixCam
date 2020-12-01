@@ -1,4 +1,5 @@
-﻿using static FourPixCam.Logger;
+﻿using NNet_InputProvider;
+using static FourPixCam.Logger;
 
 namespace FourPixCam
 {

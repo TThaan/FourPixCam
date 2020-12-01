@@ -63,6 +63,12 @@ namespace FourPixCam
             ? weightInit = GetWeightInit()
             : weightInit;
 
+        // Actually not NetParameters but rather TrainingParameters..
+
+        public float LearningRate { get; set; }
+        public float ChangeOfLearningRate { get; set; }
+        public int EpochCount { get; set; }
+
         #endregion
 
         #region helpers

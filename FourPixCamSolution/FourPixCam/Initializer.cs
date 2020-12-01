@@ -1,8 +1,5 @@
-﻿using Microsoft.AspNetCore.Http;
+﻿using NNet_InputProvider;
 using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 using static FourPixCam.Logger;
 
 namespace FourPixCam
@@ -14,40 +11,56 @@ namespace FourPixCam
     {
         #region ctor & fields
 
-        NetParameters netParameters;
-        int
-            samplesCount = 250,
-            epochCount = 10;
-        float
-            learningRate = .1f,
-            sampleTolerance = .2f,
-            distortionDeviation = .3f;
-        Sample[] _trainingData, _testingData;
-        
-        public Initializer(NetParameters netParameters)
-        {
-            this.netParameters = netParameters ?? throw new NullReferenceException(
-                    $"{typeof(NetParameters).Name} {nameof(netParameters)} ({GetType().Name}.ctor)");
-        }
-        public Initializer(NetParameters netParameters, string dataAsJson)
-            :this(netParameters)
-        {
-            
-        }
+        static NetParameters _netParameters;
+        static SampleSetParameters _sampleSetParameters;
+        static DateTime start, end;
+        static TimeSpan duration;
+        // static int epochCount = 10;
 
         #endregion
 
-        /// <summary>
-        /// Order:
-        /// Url_TrainingLabels, string Url_TrainingImages, string Url_TestingLabels, string Url_TestingImages
-        /// </summary>
-        public void Run(bool turnBased = false, params string[] urls)
+        public static void Run(NetParameters netParameters, SampleSetParameters sampleSetParameters)
         {
             // define data
             //_trainingData = GetData(trainingData);  // in DataFactory -> possible: 1d&2d(&3d) byte arrays, img, 
             //_testingData = GetData(testingData);    // in DataFactory
 
+            NeuralNet net = NeuralNetFactory.GetNeuralNet(netParameters);
 
+            PrepareTraining(netParameters, sampleSetParameters);
+            Train(net);
+
+        }
+        public static void RunTurnBased(NetParameters netParameters, SampleSetParameters sampleSetParameters)
+        {
+            throw new NotImplementedException();
+        }
+
+        static void Train(NeuralNet net)   // data(Parameters) as parameter?
+        {
+            start = DateTime.Now.Log("\n\n                                        Training Start: ", Display.ToConsoleAndFile);
+            Log($"\n                                        T r a i n i n g \n", Display.ToConsoleAndFile);
+
+            Trainer trainer = new Trainer(net.Log());
+
+            // FacPat:
+            var _trainingData = new NNet_InputProvider.FourPixCam.DataFactory().TrainingSamples;
+            var _testingData = new NNet_InputProvider.FourPixCam.DataFactory().TestingSamples;
+
+            trainer.Train(_trainingData, _testingData, _netParameters.LearningRate, _netParameters.EpochCount);
+
+            end = DateTime.Now.Log($"\n\n                                        Training End: \n", Display.ToConsoleAndFile);
+            duration = (end - start).Log($"Duration: ", Display.ToConsoleAndFile);
+        }
+
+        #region helpers
+
+        static void PrepareTraining(NetParameters netParameters, SampleSetParameters sampleSetParameters)
+        {
+            _netParameters = netParameters ?? throw new NullReferenceException(
+                       $"{typeof(NetParameters).Name} {nameof(netParameters)} ({typeof(Initializer).Name}.{nameof(PrepareTraining)})");
+            _sampleSetParameters = sampleSetParameters ?? throw new NullReferenceException(
+                       $"{typeof(SampleSetParameters).Name} {nameof(sampleSetParameters)} ({typeof(Initializer).Name}.{nameof(PrepareTraining)})");
 
             #region Logger
 
@@ -57,24 +70,9 @@ namespace FourPixCam
 
             #endregion
 
-            var start = DateTime.Now.Log("\n\n                                        Training Start: ", Display.ToConsoleAndFile);
 
-            NeuralNet net = NeuralNetFactory.GetNeuralNet(netParameters);
-            Train(net);
-
-            var end = DateTime.Now.Log($"\n\n                                        Training End: \n", Display.ToConsoleAndFile);
-            var duration = (end - start).Log($"Duration: ", Display.ToConsoleAndFile);
         }
 
-        void Train(NeuralNet net)   // data(Parameters) as parameter?
-        {
-            Log($"\n                                        T r a i n i n g \n", Display.ToConsoleAndFile);
-
-            Trainer trainer = new Trainer(net.Log());
-            // _trainingData = DataFactory.GetTrainingData(samplesCount, sampleTolerance, distortionDeviation);
-            // _testingData = DataFactory.GetTestingData(2);
-
-            trainer.Train(_trainingData, _testingData, learningRate, epochCount);
-        }
+        #endregion
     }
 }

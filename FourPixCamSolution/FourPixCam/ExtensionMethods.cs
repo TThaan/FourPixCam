@@ -1,24 +1,20 @@
-﻿using LINQPad;
-using MatrixHelper;
-using System;
+﻿using System;
 using System.Collections.Generic;
-using System.Diagnostics;
-using System.IO;
 using System.Linq;
 
 namespace FourPixCam
 {
     public static class ExtensionMethods
     {
-        public static string ToCollectionString<T>(this IEnumerable<T> collection)
+        internal static string ToCollectionString<T>(this IEnumerable<T> collection)
         {
             return string.Join(",", collection.Select(x => x.ToString()));
         }
-        public static string ToVerticalCollectionString<T>(this IEnumerable<T> collection)
+        internal static string ToVerticalCollectionString<T>(this IEnumerable<T> collection)
         {
             return string.Join("\n", collection.Select(x => x.ToString()));
         }
-        public static List<T> ToList<T>(this Array arr)
+        internal static List<T> ToList<T>(this Array arr)
         {
             var result = new List<T>();
 
@@ -29,7 +25,7 @@ namespace FourPixCam
 
             return result;
         }
-        public static IEnumerable<T> Shuffle<T>(this IEnumerable<T> collection)
+        internal static IEnumerable<T> Shuffle<T>(this IEnumerable<T> collection)
         {
             Random rnd = new Random();
 
