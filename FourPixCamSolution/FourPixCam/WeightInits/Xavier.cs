@@ -2,9 +2,9 @@
 
 namespace FourPixCam.WeightInits
 {
-    public class Xavier
+    internal class Xavier
     {
-        public static float Init(float weight, int n, ActivationType activationType)
+        internal static float Init(float weight, int n, ActivationType activationType)
         {
             if (activationType == ActivationType.ReLU ||
                 activationType == ActivationType.LeakyReLU)
@@ -16,11 +16,11 @@ namespace FourPixCam.WeightInits
                 return Standard(weight, n);
             }            
         }
-        public static float ForRelu(float weight, int n)
+        internal static float ForRelu(float weight, int n)
         {
             return weight * (float)Math.Sqrt(2f / n);
         }
-        public static float Standard(float weight, int n)
+        internal static float Standard(float weight, int n)
         {
             return weight * (float)Math.Sqrt(1f / n);
         }

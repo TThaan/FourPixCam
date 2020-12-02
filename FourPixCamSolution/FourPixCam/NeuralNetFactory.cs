@@ -1,6 +1,5 @@
 ﻿using MatrixHelper;
 using System;
-using System.Collections.ObjectModel;
 
 namespace FourPixCam
 {
@@ -13,9 +12,9 @@ namespace FourPixCam
 
         #endregion
 
-        #region public
+        #region internal
 
-        public static NeuralNet GetNeuralNet(NetParameters netParameters)
+        internal static NeuralNet GetNeuralNet(NetParameters netParameters)
         {
             _netParameters = netParameters ?? throw new NullReferenceException(
                     $"{typeof(NetParameters).Name} {nameof(netParameters)} " +
@@ -26,7 +25,7 @@ namespace FourPixCam
 
             return new NeuralNet(netParameters.Layers, netParameters.CostType);
         }
-        //public static NeuralNet GetCopy(this NeuralNet net)
+        //internal static NeuralNet GetCopy(this NeuralNet net)
         //{
         //    return new NeuralNet(new Layer[](net.Layers), net.CostType);
         //}

@@ -66,7 +66,7 @@ namespace FourPixCam
         // Actually not NetParameters but rather TrainingParameters..
 
         public float LearningRate { get; set; }
-        public float ChangeOfLearningRate { get; set; }
+        public float LearningRateChange { get; set; }
         public int EpochCount { get; set; }
 
         #endregion

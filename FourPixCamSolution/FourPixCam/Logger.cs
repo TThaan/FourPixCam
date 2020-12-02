@@ -8,7 +8,7 @@ using System.Linq;
 
 namespace FourPixCam
 {
-    public static class Logger
+    internal static class Logger
     {
         #region fields
 
@@ -18,18 +18,18 @@ namespace FourPixCam
 
         #endregion
 
-        #region public
+        #region internal
 
-        public enum Display
+        internal enum Display
         {
             Standard,
             ToConsole, 
             ToFile,
             ToConsoleAndFile
         }
-        public static Display StandardDisplay { get; set; } = Display.ToConsole;
-        public static bool IsLogOn { get; set; }
-        public static void SetError(Display display)
+        internal static Display StandardDisplay { get; set; } = Display.ToConsole;
+        internal static bool IsLogOn { get; set; }
+        internal static void SetError(Display display)
         {
             switch (display)
             {
@@ -41,11 +41,11 @@ namespace FourPixCam
                     break;
             }
         }
-        public static T Log<T>(this T obj, Display display = default)
+        internal static T Log<T>(this T obj, Display display = default)
         {
             return obj.Log("", display);
         }
-        public static T Log<T>(this T obj, string prefix, Display display = default)
+        internal static T Log<T>(this T obj, string prefix, Display display = default)
         {
             // Check if Logging is activated.
             if (!IsLogOn)
@@ -65,18 +65,18 @@ namespace FourPixCam
 
             return obj;
         }
-        public static void Log(float number, string prefix, Display display = default)
+        internal static void Log(float number, string prefix, Display display = default)
         {
             number.Log(prefix, display);
         }
-        public static void Log(string text, Display display = default)
+        internal static void Log(string text, Display display = default)
         {
             text.Log("", display);
         }
         /// <summary>
         /// 'objects' = pairs of value (string) name & value itself (object).
         /// </summary>
-        public static void LogTitle(string text, char lineSymbol, Display display = default)
+        internal static void LogTitle(string text, char lineSymbol, Display display = default)
         {
             string titleText = string.Format(
                 "\n\n    {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   {0}   \n" +
@@ -242,7 +242,7 @@ namespace FourPixCam
         #region unused?
 
         // Dumps to debugger. Used in the HTML debug view.
-        public static T DumpToHTMLDebugger<T>(this T o, out string result, string title = "")
+        internal static T DumpToHTMLDebugger<T>(this T o, out string result, string title = "")
         {
             TextWriter writer = Util.CreateXhtmlWriter();
             writer.Write(o);
@@ -250,7 +250,7 @@ namespace FourPixCam
             return o;
         }
         // Dumps to a temporary html file and opens in the browser (LinqPad).
-        public static void DumpToExplorer<T>(this T o, string title = "")
+        internal static void DumpToExplorer<T>(this T o, string title = "")
         {
             object obj;
             if (string.IsNullOrWhiteSpace(title))

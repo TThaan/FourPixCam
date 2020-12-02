@@ -18,7 +18,7 @@ namespace FourPixCam
         const int SwShow = 5;
 
 
-        public static void ShowConsoleWindow()
+        internal static void ShowConsoleWindow()
         {
             var handle = GetConsoleWindow();
 
@@ -32,7 +32,7 @@ namespace FourPixCam
             }
         }
 
-        public static void HideConsoleWindow()
+        internal static void HideConsoleWindow()
         {
             var handle = GetConsoleWindow();
 

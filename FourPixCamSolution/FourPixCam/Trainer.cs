@@ -3,39 +3,44 @@ using static FourPixCam.Logger;
 
 namespace FourPixCam
 {
-    public class Trainer
+    internal class Trainer
     {
         #region ctor & fields
 
-        float currentAccuracy;
+        float _learningRate, _learningRateChange, _epochCount;
         NeuralNet InitialNet { get; }
         //ProcessingNet processingNet;
 
-        public Trainer(NeuralNet net)
+        internal Trainer(NeuralNet net, float learningRate, float learningRateChange, int epochCount)
         {
             InitialNet = net;//.GetCopy()
             //processingNet = new ProcessingNet();//net
+            _learningRate = learningRate;
+            _learningRateChange = learningRateChange;
+            _epochCount = epochCount;
         }
 
         #endregion
 
-        #region public
-        
-        public float Train(Sample[] trainingData, Sample[] testingData, float learningRate, int epochs)
+        #region internal
+
+        internal float Train(Sample[] trainingSamples, Sample[] testingSamples)
         {
+            float currentAccuracy = 0;
+
             // Initial Test 
-            Log($"                                    Initial Accuracy : {Test(testingData)}");
+            Log($"                                    Initial Accuracy : {Test(testingSamples)}");
             
-            for (int epoch = 0; epoch < epochs; epoch++)
+            for (int epoch = 0; epoch < _epochCount; epoch++)
             {
                 LogTitle("T R A I N I N G", '*');
-                Log(learningRate, nameof(learningRate));
+                Log(_learningRate, nameof(_learningRate));
                 Log(epoch, nameof(epoch));
-                Log(epochs, nameof(epochs));
+                Log(_epochCount, nameof(_epochCount));
 
-                currentAccuracy = TrainEpoch(trainingData, testingData, learningRate, epoch);                
-                Log($"                                    Current Accuracy : {currentAccuracy}    (eta = {learningRate})", Display.ToConsoleAndFile);
-                learningRate *= .9f;
+                currentAccuracy = TrainEpoch(trainingSamples, testingSamples, epoch);                
+                Log($"                                    Current Accuracy : {currentAccuracy}    (eta = {_learningRate})", Display.ToConsoleAndFile);
+                _learningRate *= _learningRateChange;
             }
 
             Log("Finished training.", Display.ToConsoleAndFile);
@@ -46,33 +51,33 @@ namespace FourPixCam
 
         #region helpers
 
-        float TrainEpoch(Sample[] trainingSet, Sample[] testingData, float learningRate, int epoch)
+        float TrainEpoch(Sample[] trainingSamples, Sample[] testingSamples, int currentEpoch)
         {
-            for (int sample = 0; sample < trainingSet.Length; sample++)
+            for (int sample = 0; sample < trainingSamples.Length; sample++)
             {
                 LogTitle("F E E D   F O R W A R D", '*');
-                Log($"epoch/sample: {epoch}/{sample}");
+                Log($"epoch/sample: {currentEpoch}/{sample}");
 
-                trainingSet[sample].Input.Log($"\nA[0] = ");
+                trainingSamples[sample].Input.Log($"\nA[0] = ");
                 Log("\n    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
 
-                var output = InitialNet.FeedForward(trainingSet[sample].Input);
+                var output = InitialNet.FeedForward(trainingSamples[sample].Input);
 
                 LogTitle("B A C K P R O P A P A G A T I O N", '*');
-                Log($"epoch/sample: {epoch}/{sample}");
-                InitialNet.PropagateBack(trainingSet[sample].ExpectedOutput.Log("\nt ="), learningRate);
+                Log($"epoch/sample: {currentEpoch}/{sample}");
+                InitialNet.PropagateBack(trainingSamples[sample].ExpectedOutput.Log("\nt ="), _learningRate);
                 // InitialNet.AdaptWeightsAndBiases(learningRate);
             }
 
             LogTitle("T e s t", '*');
-            Log($"epoch: {epoch}");
-            return Test(testingData);
+            Log($"epoch: {_epochCount}");
+            return Test(testingSamples);
         }
-        float Test(Sample[] testingData)
+        float Test(Sample[] testingSamples)
         {
             int bad = 0, good = 0;
 
-            foreach (var sample in testingData.Shuffle())
+            foreach (var sample in testingSamples.Shuffle())
             {
                 sample.ActualOutput = InitialNet.FeedForward(sample.Input);
 

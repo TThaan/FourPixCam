@@ -3,14 +3,13 @@ using MatrixHelper;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
-using static FourPixCam.NeurNetMath;
 
 namespace FourPixCam
 {
     /// <summary>
     /// ta Neuron class..(i.e. matrix less variant?)
     /// </summary>
-    public class NeuralNet
+    internal class NeuralNet
     {
         #region ctor & fields
 
@@ -18,11 +17,11 @@ namespace FourPixCam
         Func<float, float, float> cost, costDerivation; // Redundant? (Not saving values here but refs to methods!)
 
         // Only needed if ProcessingNet is a child class:
-        public NeuralNet(NeuralNet net)
+        internal NeuralNet(NeuralNet net)
         {
 
         }
-        public NeuralNet(Layer[] layers, CostType costType)
+        internal NeuralNet(Layer[] layers, CostType costType)
         {
             Layers = layers ??
                 throw new NullReferenceException($"{typeof(ObservableCollection<Layer>).Name} {nameof(layers)} " +
@@ -41,23 +40,23 @@ namespace FourPixCam
 
         #endregion
 
-        #region public
+        #region internal
 
-        public Layer[] Layers { get; set; }
-        public int LayersCount => layerCount == default
+        internal Layer[] Layers { get; set; }
+        internal int LayersCount => layerCount == default
             ? layerCount = Layers.Length
             : layerCount;
-        public CostType CostType { get; set; }
+        internal CostType CostType { get; set; }
         // Redundant? (Not saving values here but refs to methods!):
-        public Func<float, float, float> Cost => cost == default
+        internal Func<float, float, float> Cost => cost == default
             ? cost = GetCost()
             : cost;
         // Redundant? (Not saving values here but refs to methods!):
-        public Func<float, float, float> CostDerivation => costDerivation == default
+        internal Func<float, float, float> CostDerivation => costDerivation == default
             ? costDerivation = GetCostDerivation()
             : costDerivation;
 
-        public Matrix FeedForward(Matrix input)
+        internal Matrix FeedForward(Matrix input)
         {
             Layers[0].Processed.ProcessInput(input);
             return Layers.Last().Processed.Output;
@@ -66,11 +65,11 @@ namespace FourPixCam
         /// 
         /// </summary>
         /// <returns>cost matrix?</returns>
-        public void PropagateBack(Matrix expectedOutput, float learningRate)
+        internal void PropagateBack(Matrix expectedOutput, float learningRate)
         {
             Layers.Last().Processed.ProcessCost(expectedOutput, CostDerivation, learningRate);
         }
-        public void AdaptWeightsAndBiases(float learningRate)
+        internal void AdaptWeightsAndBiases(float learningRate)
         {
             
         }

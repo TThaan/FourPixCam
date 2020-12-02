@@ -3,12 +3,12 @@ using System.Linq;
 
 namespace FourPixCam.Activators
 {
-    public class ReLU
+    internal class ReLU
     {
         /// <summary>
         /// Activation ('squashing') function of any weighted input z.
         /// </summary>
-        public static float a(float z)
+        internal static float a(float z)
         {
             return z >= 0
                 ? z
@@ -17,7 +17,7 @@ namespace FourPixCam.Activators
         /// <summary>
         /// Activation ('squashing') function of the weighted input matrix z.
         /// </summary>
-        public static Matrix a(Matrix z)
+        internal static Matrix a(Matrix z)
         {
             return new Matrix(
                 z.Select(x => x >= 0f ? x : 0)
@@ -26,7 +26,7 @@ namespace FourPixCam.Activators
         /// <summary>
         /// Derivation of the activation ('squashing') function with respect to any weighted input z.
         /// </summary>
-        public static float dadz(float z)
+        internal static float dadz(float z)
         {
             return z >= 0
                 ? 1
@@ -35,7 +35,7 @@ namespace FourPixCam.Activators
         /// <summary>
         /// Partial derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>
-        public static Matrix dadz(Matrix z)
+        internal static Matrix dadz(Matrix z)
         {
             return new Matrix(z.Select(x => x >= 0f ? 1f : 0).ToArray())
                 .Transpose; ;

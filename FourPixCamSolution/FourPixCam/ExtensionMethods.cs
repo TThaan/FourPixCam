@@ -4,7 +4,7 @@ using System.Linq;
 
 namespace FourPixCam
 {
-    public static class ExtensionMethods
+    internal static class ExtensionMethods
     {
         internal static string ToCollectionString<T>(this IEnumerable<T> collection)
         {
