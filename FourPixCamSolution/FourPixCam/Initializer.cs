@@ -37,7 +37,7 @@ namespace FourPixCam
 
             var start = DateTime.Now.Log("\n\n                                        Training Start: ", Display.ToConsoleAndFile);
             Log($"\n                                        T r a i n i n g \n", Display.ToConsoleAndFile);
-
+            
             trainer.Train(sampleSet.TrainingSamples, sampleSet.TestingSamples);
 
             var end = DateTime.Now.Log($"\n\n                                        Training End: \n", Display.ToConsoleAndFile);

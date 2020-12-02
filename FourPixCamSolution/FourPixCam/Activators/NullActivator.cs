@@ -1,5 +1,4 @@
 ﻿using MatrixHelper;
-using System;
 
 namespace FourPixCam.Activators
 {
@@ -8,30 +7,32 @@ namespace FourPixCam.Activators
         /// <summary>
         /// Activation ('squashing') function of the weighted input z.
         /// </summary>
-        internal static float a(float z)
+        internal static float Activation(float z)
         {
             return z;
         }
         /// <summary>
         /// Activation ('squashing') function of the weighted input z.
         /// </summary>
-        internal static Matrix a(Matrix z)
+        internal static Matrix Activation(Matrix z)
         {
             return z;
         }
         /// <summary>
         /// Derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>
-        internal static float dadz(float z)
+        internal static float Derivation(float z)
         {
-            throw new NotImplementedException();
+            // Check:
+            return 1;
         }
         /// <summary>
         /// Partial derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>
-        internal static Matrix dadz(Matrix z)
+        internal static Matrix Derivation(Matrix z)
         {
-            throw new NotImplementedException();
+            // Check:
+            return z.ForEach(x => 1);
         }
     }
 }

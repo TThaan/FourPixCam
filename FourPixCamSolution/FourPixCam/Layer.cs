@@ -14,7 +14,7 @@ namespace FourPixCam
         #region ctor & fields
 
         Processed processed;
-        Func<float, float> activation, activationDerivation;
+        Func<Matrix, Matrix> activation, activationDerivation;
 
         public Layer()
         {
@@ -28,10 +28,10 @@ namespace FourPixCam
         public int Id { get; set; }
         public int N { get; set; }
         public ActivationType ActivationType { get; set; } = ActivationType.ReLU;
-        public Func<float, float> Activation => activation == default 
+        public Func<Matrix, Matrix> Activation => activation == default 
             ? activation = GetActivation() 
             : activation;
-        public Func<float, float> ActivationDerivation => activationDerivation == default
+        public Func<Matrix, Matrix> ActivationDerivation => activationDerivation == default
             ? activationDerivation = GetActivationDerivation()
             : activationDerivation;
         public Matrix Weights { get; set; }
@@ -43,48 +43,48 @@ namespace FourPixCam
 
         #region helpers
 
-        Func<float, float> GetActivation()
+        Func<Matrix, Matrix> GetActivation()
         {
             switch (ActivationType)
             {
                 case ActivationType.Undefined:
                     return default;
                 case ActivationType.LeakyReLU:
-                    return LeakyReLU.a;
+                    return LeakyReLU.Activation;
                 case ActivationType.NullActivator:
-                    return NullActivator.a;
+                    return NullActivator.Activation;
                 case ActivationType.ReLU:
-                    return ReLU.a;
+                    return ReLU.Activation;
                 case ActivationType.Sigmoid:
-                    return Sigmoid.a;
+                    return Sigmoid.Activation;
                 case ActivationType.SoftMax:
-                    return SoftMax.a;
+                    return SoftMax.Activation;
                 case ActivationType.Tanh:
-                    return Tanh.a;
+                    return Tanh.Activation;
                 case ActivationType.None:
                     return default;
                 default:
                     return default;
             }
         }
-        Func<float, float> GetActivationDerivation()
+        Func<Matrix, Matrix> GetActivationDerivation()
         {
             switch (ActivationType)
             {
                 case ActivationType.Undefined:
                     return default;
                 case ActivationType.LeakyReLU:
-                    return LeakyReLU.dadz;
+                    return LeakyReLU.Derivation;
                 case ActivationType.NullActivator:
-                    return NullActivator.dadz;
+                    return NullActivator.Derivation;
                 case ActivationType.ReLU:
-                    return ReLU.dadz;
+                    return ReLU.Derivation;
                 case ActivationType.Sigmoid:
-                    return Sigmoid.dadz;
+                    return Sigmoid.Derivation;
                 case ActivationType.SoftMax:
-                    return SoftMax.dadz;
+                    return SoftMax.Derivation;
                 case ActivationType.Tanh:
-                    return Tanh.dadz;
+                    return Tanh.Derivation;
                 case ActivationType.None:
                     return default;
                 default:
@@ -116,13 +116,13 @@ namespace FourPixCam
             Input = new Matrix(layer.N);
             Delta = new Matrix(layer.N);
             
-            for (int j = 0; j < Input.m; j++)
-            {
-                for (int k = 0; k < Input.n; k++)
-                {
-                    Input[j,k] = (float)new Random().NextDouble();
-                }
-            }
+            //for (int j = 0; j < Input.m; j++)
+            //{
+            //    for (int k = 0; k < Input.n; k++)
+            //    {
+            //        Input[j,k] = (float)new Random().NextDouble();
+            //    }
+            //}
         }
 
         #endregion
@@ -130,7 +130,7 @@ namespace FourPixCam
         /// <summary>
         /// "Weighted Sum" (z).
         /// </summary>
-        public Matrix Input { get; set; }
+        public Matrix Input { get; set; }//getRefs
         /// <summary>
         /// "Activated output" (a).
         /// </summary>
@@ -168,7 +168,7 @@ namespace FourPixCam
             }
             // return.. 
         }
-        public void ProcessCost(Matrix expectedOutput, Func<float, float, float> costDerivation, float learningRate)
+        public void ProcessCost(Matrix expectedOutput, Func<Matrix, Matrix, Matrix> costDerivation, float learningRate)
         {
             if (ProjectiveField != null) 
                 throw new ArgumentException("'ProcessCost(..)' can only be called in the output layer.");

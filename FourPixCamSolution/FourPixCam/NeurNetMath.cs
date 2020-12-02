@@ -1,4 +1,6 @@
-﻿using MatrixHelper;
+﻿using FourPixCam.Activators;
+using FourPixCam.CostFunctions;
+using MatrixHelper;
 using System;
 using System.Linq;
 using static MatrixHelper.Operations;
@@ -27,10 +29,14 @@ namespace FourPixCam
         /// <summary>
         /// Activation function of the weighted input a=f(z).
         /// </summary>
-        internal static Matrix Get_a(Matrix z, Func<float, float> activation)
+        internal static Matrix Get_a(Matrix z, Func<Matrix, Matrix> activation)
         {
-            return new Matrix(z.Select(z_j => activation(z_j)).ToArray())
+            return activation(z)
                 .Log($"\nA = ");
+            // Bad workaround!
+            // Find better solution, e.g. activation = Func<Matrix, float)
+            // return new Matrix(z.Select(z_j => activation(z_j)).ToArray())
+            //     .Log($"\nA = ");
         }
         internal static Matrix Get_C(Matrix a, Matrix t, Func<float, float, float> c_j)
         {
@@ -53,15 +59,41 @@ namespace FourPixCam
         /// <param name="a">L</param>
         /// <param name="z">L</param>
         internal static Matrix Get_deltaOutput(
-            Matrix a, Matrix t, Func<float, float, float> costDerivation,
-            Matrix z, Func<float, float> activationDerivation)
+            Matrix a, Matrix t, Func<Matrix, Matrix, Matrix> costDerivation,
+            Matrix z, Func<Matrix, Matrix> activationDerivation)
         {
-            Matrix result = new Matrix(a.m);
+            //Matrix costDerivTest = new Matrix(a.m);
+            //Matrix activTest = new Matrix(a.m);
+            //Matrix resultTest = new Matrix(a.m);
 
-            for (int j = 0; j < a.m; j++)
-            {
-                result[j] = costDerivation(a[j], t[j]) * activationDerivation(z[j]);
-            }
+            //if (activationDerivation.Method.DeclaringType == typeof(Tanh))
+            //{
+            //    for (int j = 0; j < a.m; j++)
+            //    {
+            //        costDerivTest[j] = SquaredMeanError.DerivationOfCostFunction(a[j], t[j]);
+            //        activTest[j] = Tanh.Derivation(z[j]);
+            //        resultTest[j] = costDerivTest[j] * activTest[j];
+            //    }
+
+            //}
+            //else if (activationDerivation.Method.DeclaringType == typeof(ReLU))
+            //{
+            //    for (int j = 0; j < a.m; j++)
+            //    {
+            //        costDerivTest[j] = SquaredMeanError.DerivationOfCostFunction(a[j], t[j]);
+            //        activTest[j] = ReLU.Derivation(z[j]);
+            //        resultTest[j] = costDerivTest[j] * activTest[j];
+            //    }
+            //}
+
+            var costDeriv = costDerivation(a, t);
+            //var diff1 = costDeriv - costDerivTest;
+
+            var activ = activationDerivation(z);
+            //var diff2 = activ - activTest;
+
+            Matrix result = HadamardProduct(costDeriv, activ);
+            //var diff3 = result - resultTest;
 
             return result
                 .Log($"\ndelta =");
@@ -69,10 +101,10 @@ namespace FourPixCam
         /// <param name="w">l+1</param>
         /// <param name="delta">l+1</param>
         /// <param name="z">l</param>
-        internal static Matrix Get_deltaHidden(Matrix w, Matrix delta, Matrix z, Func<float, float> dadzFunction)
+        internal static Matrix Get_deltaHidden(Matrix w, Matrix delta, Matrix z, Func<Matrix, Matrix> activationDerivation)
         {
             Matrix dCda = w.Transpose * delta;
-            Matrix dadz = new Matrix(z.Select(x => dadzFunction(x)).ToArray());
+            Matrix dadz = activationDerivation(z);
             
             return HadamardProduct(dCda, dadz)
                 .Log($"\ndelta =");

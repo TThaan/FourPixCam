@@ -14,7 +14,7 @@ namespace FourPixCam
         #region ctor & fields
 
         int layerCount;
-        Func<float, float, float> cost, costDerivation; // Redundant? (Not saving values here but refs to methods!)
+        Func<Matrix, Matrix, Matrix> cost, costDerivation; // Redundant? (Not saving values here but refs to methods!)
 
         // Only needed if ProcessingNet is a child class:
         internal NeuralNet(NeuralNet net)
@@ -48,11 +48,11 @@ namespace FourPixCam
             : layerCount;
         internal CostType CostType { get; set; }
         // Redundant? (Not saving values here but refs to methods!):
-        internal Func<float, float, float> Cost => cost == default
+        internal Func<Matrix, Matrix, Matrix> Cost => cost == default
             ? cost = GetCost()
             : cost;
         // Redundant? (Not saving values here but refs to methods!):
-        internal Func<float, float, float> CostDerivation => costDerivation == default
+        internal Func<Matrix, Matrix, Matrix> CostDerivation => costDerivation == default
             ? costDerivation = GetCostDerivation()
             : costDerivation;
 
@@ -78,7 +78,7 @@ namespace FourPixCam
 
         #region helpers
 
-        Func<float, float, float> GetCost()
+        Func<Matrix, Matrix, Matrix> GetCost()
         {
             switch (CostType)
             {
@@ -90,7 +90,7 @@ namespace FourPixCam
                     return default;
             }
         }
-        Func<float, float, float> GetCostDerivation()
+        Func<Matrix, Matrix, Matrix> GetCostDerivation()
         {
             switch (CostType)
             {

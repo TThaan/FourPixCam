@@ -1,6 +1,5 @@
 ﻿using MatrixHelper;
 using System;
-using System.Linq;
 
 namespace FourPixCam.Activators
 {
@@ -9,7 +8,7 @@ namespace FourPixCam.Activators
         /// <summary>
         /// Activation ('squashing') function of any weighted input neuron z.
         /// </summary>
-        internal static float a(float z)
+        internal static float Activation(float z)
         {
             var tmp = 1 / (1 + (float)Math.Exp(-z));
             return tmp;
@@ -17,18 +16,16 @@ namespace FourPixCam.Activators
         /// <summary>
         /// Activation ('squashing') function of the weighted input matrix z.
         /// </summary>
-        internal static Matrix a(Matrix z)
+        internal static Matrix Activation(Matrix z)
         {
-            return new Matrix(
-                z.Select(x => 1 / (1 + (float)Math.Exp(-x)))
-                .ToArray());
+            return z.ForEach(x => 1 / (1 + (float)Math.Exp(-x)));
         }
         /// <summary>
         /// Derivation of the activation ('squashing') function with respect to any weighted input z.
         /// </summary>
-        internal static float dadz(float z)
+        internal static float Derivation(float z)
         {
-            var check = a(z) * (1 - a(z));
+            var check = Activation(z) * (1 - Activation(z));
             if (float.IsInfinity(check))
             {
 
@@ -42,10 +39,9 @@ namespace FourPixCam.Activators
         /// <summary>
         /// Partial derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>
-        internal static Matrix dadz(Matrix z)
+        internal static Matrix Derivation(Matrix z)
         {
-            return new Matrix(z.Select(z_j => a(z_j) * (1 - a(z_j))).ToArray())
-                .Transpose;
+            return z.ForEach(x => Activation(x) * (1 - Activation(x)));
         }
     }
 }
