@@ -11,6 +11,7 @@ namespace FourPixCam
     {
         #region fields
 
+        [NonSerialized()]
         Func<float, int, ActivationType, float> weightInit;
 
         #endregion

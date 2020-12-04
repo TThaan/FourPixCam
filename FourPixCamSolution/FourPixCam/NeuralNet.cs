@@ -9,19 +9,19 @@ namespace FourPixCam
     /// <summary>
     /// ta Neuron class..(i.e. matrix less variant?)
     /// </summary>
-    internal class NeuralNet
+    public class NeuralNet
     {
         #region ctor & fields
 
         int layerCount;
-        Func<Matrix, Matrix, Matrix> cost, costDerivation; // Redundant? (Not saving values here but refs to methods!)
+        Func<Matrix, Matrix, Matrix> cost, costDerivation; // Redundant? (Not saving values here but refs to methods)
 
         // Only needed if ProcessingNet is a child class:
-        internal NeuralNet(NeuralNet net)
+        public NeuralNet(NeuralNet net)
         {
 
         }
-        internal NeuralNet(Layer[] layers, CostType costType)
+        public NeuralNet(Layer[] layers, CostType costType)
         {
             Layers = layers ??
                 throw new NullReferenceException($"{typeof(ObservableCollection<Layer>).Name} {nameof(layers)} " +
@@ -42,36 +42,31 @@ namespace FourPixCam
 
         #region internal
 
-        internal Layer[] Layers { get; set; }
-        internal int LayersCount => layerCount == default
+        public Layer[] Layers { get; set; }
+        public int LayersCount => layerCount == default
             ? layerCount = Layers.Length
             : layerCount;
-        internal CostType CostType { get; set; }
-        // Redundant? (Not saving values here but refs to methods!):
-        internal Func<Matrix, Matrix, Matrix> Cost => cost == default
+        public CostType CostType { get; set; }
+        // Redundant?:
+        public Func<Matrix, Matrix, Matrix> Cost => cost == default
             ? cost = GetCost()
             : cost;
-        // Redundant? (Not saving values here but refs to methods!):
-        internal Func<Matrix, Matrix, Matrix> CostDerivation => costDerivation == default
+        // Redundant?:
+        public Func<Matrix, Matrix, Matrix> CostDerivation => costDerivation == default
             ? costDerivation = GetCostDerivation()
             : costDerivation;
 
-        internal Matrix FeedForward(Matrix input)
+        public void FeedForward(Matrix input)
         {
             Layers[0].Processed.ProcessInput(input);
-            return Layers.Last().Processed.Output;
         }
         /// <summary>
         /// 
         /// </summary>
         /// <returns>cost matrix?</returns>
-        internal void PropagateBack(Matrix expectedOutput, float learningRate)
+        public void PropagateBack(Matrix expectedOutput, float learningRate)
         {
             Layers.Last().Processed.ProcessCost(expectedOutput, CostDerivation, learningRate);
-        }
-        internal void AdaptWeightsAndBiases(float learningRate)
-        {
-            
         }
 
         #endregion

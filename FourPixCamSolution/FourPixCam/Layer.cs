@@ -14,6 +14,7 @@ namespace FourPixCam
         #region ctor & fields
 
         Processed processed;
+        [NonSerialized]
         Func<Matrix, Matrix> activation, activationDerivation;
 
         public Layer()
@@ -59,6 +60,8 @@ namespace FourPixCam
                     return Sigmoid.Activation;
                 case ActivationType.SoftMax:
                     return SoftMax.Activation;
+                case ActivationType.SoftMaxWithCrossEntropyLoss:
+                    return SoftMaxWithCrossEntropyLoss.Activation;
                 case ActivationType.Tanh:
                     return Tanh.Activation;
                 case ActivationType.None:
@@ -83,6 +86,8 @@ namespace FourPixCam
                     return Sigmoid.Derivation;
                 case ActivationType.SoftMax:
                     return SoftMax.Derivation;
+                case ActivationType.SoftMaxWithCrossEntropyLoss:
+                    return SoftMaxWithCrossEntropyLoss.Derivation;
                 case ActivationType.Tanh:
                     return Tanh.Derivation;
                 case ActivationType.None:
@@ -95,8 +100,6 @@ namespace FourPixCam
         #endregion
     }
 
-    // Processed data should be observed (optionally) ?
-
     /// <summary>
     /// Layer logic & fluent data.
     /// </summary>
@@ -105,7 +108,6 @@ namespace FourPixCam
     {
         #region ctor & fields
 
-        // float[] input, output, delta;
         Layer _layer;
 
         public Processed(Layer layer)
@@ -115,14 +117,6 @@ namespace FourPixCam
             Output = new Matrix(layer.N);
             Input = new Matrix(layer.N);
             Delta = new Matrix(layer.N);
-            
-            //for (int j = 0; j < Input.m; j++)
-            //{
-            //    for (int k = 0; k < Input.n; k++)
-            //    {
-            //        Input[j,k] = (float)new Random().NextDouble();
-            //    }
-            //}
         }
 
         #endregion
@@ -130,7 +124,7 @@ namespace FourPixCam
         /// <summary>
         /// "Weighted Sum" (z).
         /// </summary>
-        public Matrix Input { get; set; }//getRefs
+        public Matrix Input { get; set; }
         /// <summary>
         /// "Activated output" (a).
         /// </summary>
