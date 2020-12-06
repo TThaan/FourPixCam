@@ -5,12 +5,12 @@ namespace FourPixCam.Activators
     /// <summary>
     /// Use this only on the output layer!
     /// </summary>
-    internal class SoftMaxWithCrossEntropyLoss : SoftMax
+    public class SoftMaxWithCrossEntropyLoss : SoftMax
     {
-        new internal static Matrix Derivation(Matrix z)
+        new public static Matrix Derivation(Matrix result, Matrix z)
         {
             // Check:
-            return z.ForEach(x => 1);
+            return result.ForEach(z, x => 1);
         }
     }
 }

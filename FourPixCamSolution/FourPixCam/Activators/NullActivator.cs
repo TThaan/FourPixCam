@@ -2,26 +2,26 @@
 
 namespace FourPixCam.Activators
 {
-    internal class NullActivator// : Activation
+    public class NullActivator// : Activation
     {
         /// <summary>
         /// Activation ('squashing') function of the weighted input z.
         /// </summary>
-        internal static float Activation(float z)
+        public static float Activation(float z)
         {
             return z;
         }
         /// <summary>
         /// Activation ('squashing') function of the weighted input z.
         /// </summary>
-        internal static Matrix Activation(Matrix z)
+        public static Matrix Activation(Matrix result, Matrix z)
         {
-            return z;
+            return result = z;
         }
         /// <summary>
         /// Derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>
-        internal static float Derivation(float z)
+        public static float Derivation(float z)
         {
             // Check:
             return 1;
@@ -29,10 +29,10 @@ namespace FourPixCam.Activators
         /// <summary>
         /// Partial derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>
-        internal static Matrix Derivation(Matrix z)
+        public static Matrix Derivation(Matrix result, Matrix z)
         {
             // Check:
-            return z.ForEach(x => 1);
+            return result.ForEach(z, x => 1);
         }
     }
 }

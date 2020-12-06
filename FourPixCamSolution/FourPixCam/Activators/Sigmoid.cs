@@ -3,12 +3,12 @@ using System;
 
 namespace FourPixCam.Activators
 {
-    internal class Sigmoid
+    public class Sigmoid
     {
         /// <summary>
         /// Activation ('squashing') function of any weighted input neuron z.
         /// </summary>
-        internal static float Activation(float z)
+        public static float Activation(float z)
         {
             var tmp = 1 / (1 + (float)Math.Exp(-z));
             return tmp;
@@ -16,14 +16,14 @@ namespace FourPixCam.Activators
         /// <summary>
         /// Activation ('squashing') function of the weighted input matrix z.
         /// </summary>
-        internal static Matrix Activation(Matrix z)
+        public static Matrix Activation(Matrix result, Matrix z)
         {
-            return z.ForEach(x => 1 / (1 + (float)Math.Exp(-x)));
+            return result.ForEach(z, x => 1 / (1 + (float)Math.Exp(-x)));
         }
         /// <summary>
         /// Derivation of the activation ('squashing') function with respect to any weighted input z.
         /// </summary>
-        internal static float Derivation(float z)
+        public static float Derivation(float z)
         {
             var check = Activation(z) * (1 - Activation(z));
             if (float.IsInfinity(check))
@@ -39,9 +39,9 @@ namespace FourPixCam.Activators
         /// <summary>
         /// Partial derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>
-        internal static Matrix Derivation(Matrix z)
+        public static Matrix Derivation(Matrix result, Matrix z)
         {
-            return z.ForEach(x => Activation(x) * (1 - Activation(x)));
+            return result.ForEach(z, x => Activation(x) * (1 - Activation(x)));
         }
     }
 }

@@ -9,17 +9,13 @@ namespace FourPixCam
     [Serializable]
     public class NetParameters
     {
-        #region fields
-
-        [NonSerialized()]
-        Func<float, int, ActivationType, float> weightInit;
-
-        #endregion
-
         #region ctor
 
-        public NetParameters()
+        public NetParameters(WeightInitType weightInitType)
         {
+            WeightInitType = weightInitType;
+            WeightInit = GetWeightInit();
+
             // Default Values (Redundant, only wanted in/for UI?):
             // SetDefaultValues();
         }
@@ -35,11 +31,11 @@ namespace FourPixCam
             BiasMax = 1;
             Layers = new[]
             {
-                new Layer{ Id= 0, N=4, ActivationType=ActivationType.None},
-                new Layer{ Id= 1, N=4, ActivationType=ActivationType.Tanh},
-                new Layer{ Id= 2, N=4, ActivationType=ActivationType.Tanh},
-                new Layer{ Id= 3, N=8, ActivationType=ActivationType.ReLU},
-                new Layer{ Id= 4, N=4, ActivationType=ActivationType.Tanh}
+                new Layer(0, 4 ,ActivationType.None),
+                new Layer(1, 4, ActivationType.Tanh),
+                new Layer(2, 4, ActivationType.Tanh),
+                new Layer(3, 8, ActivationType.ReLU),
+                new Layer(4, 4, ActivationType.Tanh)
             };
             CostType = CostType.SquaredMeanError;
             WeightInitType = WeightInitType.Xavier;
@@ -59,10 +55,7 @@ namespace FourPixCam
         public float BiasMax { get; set; }
         public CostType CostType { get; set; }
         public WeightInitType WeightInitType { get; set; }
-
-        public Func<float, int, ActivationType, float> WeightInit => weightInit == default
-            ? weightInit = GetWeightInit()
-            : weightInit;
+        public Func<float, int, ActivationType, float> WeightInit { get; set; }
 
         // Actually not NetParameters but rather TrainingParameters..
 
@@ -74,7 +67,7 @@ namespace FourPixCam
 
         #region helpers
 
-        // better in factory?
+        // in factory?
         Func<float, int, ActivationType, float> GetWeightInit()
         {
             switch (WeightInitType)

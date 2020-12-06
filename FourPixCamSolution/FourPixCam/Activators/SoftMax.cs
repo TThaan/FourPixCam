@@ -4,39 +4,39 @@ using System.Linq;
 
 namespace FourPixCam.Activators
 {
-    internal class SoftMax// : Activation
+    public class SoftMax// : Activation
     {
         #region methods
 
         /// <summary>
         /// Activation ('squashing') function of the weighted input z.
         /// </summary>
-        internal static float Activation(float z)
+        public static float Activation(float z)
         {
             throw new NotImplementedException();
         }
         /// <summary>
         /// Activation ('squashing') function of the weighted input z.
         /// </summary>
-        internal static Matrix Activation(Matrix z)
+        public static Matrix Activation(Matrix result, Matrix z)
         {
-            Matrix result = z.ForEach(x => (float)Math.Exp(x));
+            result = z.ForEach(x => (float)Math.Exp(x));
             float sum = result.Sum();
             return sum == 0 ? result : result / sum;
         }
         /// <summary>
         /// Derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>
-        internal static float Derivation(float z)
+        public static float Derivation(float z)
         {
             throw new NotImplementedException();
         }
         /// <summary>
         /// Partial derivation of the activation ('squashing') function with respect to the weighted input z.
         /// </summary>
-        internal static Matrix Derivation(Matrix z)
+        public static Matrix Derivation(Matrix result, Matrix z)
         {
-            return z.ForEach(x => x * (1 - x));
+            return result.ForEach(z, x => x * (1 - x));
         }
 
         #endregion

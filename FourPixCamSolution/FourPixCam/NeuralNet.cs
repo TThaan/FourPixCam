@@ -66,7 +66,7 @@ namespace FourPixCam
         /// <returns>cost matrix?</returns>
         public void PropagateBack(Matrix expectedOutput, float learningRate)
         {
-            Layers.Last().Processed.ProcessCost(expectedOutput, CostDerivation, learningRate);
+            Layers.Last().Processed.ProcessOutputDelta(expectedOutput, CostDerivation, learningRate);
         }
 
         #endregion

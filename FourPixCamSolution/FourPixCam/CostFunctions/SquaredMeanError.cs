@@ -20,11 +20,13 @@ namespace FourPixCam.CostFunctions
         }
         internal static Matrix CostFunction(Matrix a, Matrix t)
         {
-            return (t - a) * (t - a); //0.5f * 
+            return t.Subtract(a) * t.Subtract(a);
+            // return (t - a) * (t - a); //0.5f * 
         }
         internal static Matrix DerivationOfCostFunction(Matrix a, Matrix t)
         {
-            return (a - t);//2*
+            return a.Subtract(t);
+            // return (a - t);//2*
         }
     }
 }
