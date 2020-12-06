@@ -58,7 +58,7 @@ namespace FourPixCam
 
                 Net.FeedForward(trainingSamples[sample].Input);
                 t2 = DateTime.Now;
-                Net.PropagateBack(trainingSamples[sample].ExpectedOutput.Log("\nt ="), _learningRate);
+                Net.PropagateBack(trainingSamples[sample].ExpectedOutput, _learningRate);
                 t3 = DateTime.Now;
 
                 #endregion
@@ -116,7 +116,6 @@ namespace FourPixCam
                     {
                         bad++;
                     }
-                    sample.Log();
                 }
                 return (float)good / (good + bad);
             });            

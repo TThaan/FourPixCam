@@ -152,13 +152,24 @@ namespace FourPixCam
 
         // Wa: diff weight/bias range for diff layer?
 
-        public void ProcessInput(Matrix input = null)
+        public void ProcessInput(Matrix originalInput = null)
         {
             // Test: Compare with and without return value (get vs set).
             // Use ExtMeth in Activators?
-            Input = input ?? Input.GetScalarProduct(_layer.Weights, ReceptiveField.Processed.Output);
+
+            if (originalInput != null)
+            {
+                Input = new Matrix(originalInput);
+            }
+            else
+            {
+                Input.ForEach(x => 0);
+                Input = Input.GetScalarProduct(_layer.Weights, ReceptiveField.Processed.Output);
+            }
+
             if (_layer.Biases != null)
                 Input = Input.Add(_layer.Biases);
+            Output.ForEach(x => 0);
             Output = _layer.Activation(Output, Input);
 
             ProjectiveField?.Processed.ProcessInput();
@@ -168,8 +179,10 @@ namespace FourPixCam
             if (ProjectiveField != null) 
                 throw new ArgumentException("'ProcessCost(..)' can only be called in the output layer.");
 
+            DCDA.ForEach(x => 0);
             DCDA = costDerivation(DCDA, expectedOutput);
 
+            Delta.ForEach(x => 0);
             Delta = _layer.ActivationDerivation(Delta, Input).GetHadamardProduct(DCDA);
             AdaptWeightsAndBiases(learningRate);
             ReceptiveField?.Processed.ProcessHiddenDelta(learningRate);
@@ -182,8 +195,10 @@ namespace FourPixCam
             if (ProjectiveField == null)
                 throw new ArgumentException("'ProcessDelta(..)' can only be called in a hidden layer.");
 
+            DCDA.ForEach(x => 0);
             DCDA = DCDA.GetScalarProduct(ProjectiveField.Weights.Transpose, ProjectiveField.Processed.Delta);
 
+            Delta.ForEach(x => 0);
             Delta = _layer.ActivationDerivation(Delta, Input).GetHadamardProduct(DCDA);
             AdaptWeightsAndBiases(learningRate);
             ReceptiveField?.Processed.ProcessHiddenDelta(learningRate);

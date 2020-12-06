@@ -27,11 +27,15 @@ namespace FourPixCam
                 throw new NullReferenceException($"{typeof(ObservableCollection<Layer>).Name} {nameof(layers)} " +
                 $"({GetType().Name}.ctor)");
 
-            for (int i = 1; i < LayersCount; i++)
+            for (int i = 0; i < LayersCount - 1; i++)
             {
-                Layers[i].Processed.ReceptiveField = Layers[i - 1];
-                Layers[i-1].Processed.ProjectiveField = Layers[i];
+                if (i != LayersCount - 1)
+                {
+                    Layers[i + 1].Processed.ReceptiveField = Layers[i];
+                    Layers[i].Processed.ProjectiveField = Layers[i + 1];
+                }
             }
+            // Layers[Layers.Length - 2].Processed.ProjectiveField = Layers[Layers.Length - 1];
 
             CostType = costType;
 

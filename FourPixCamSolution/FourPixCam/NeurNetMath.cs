@@ -32,8 +32,7 @@ namespace FourPixCam
         //    activation(z);
         //    // Bad workaround!
         //    // Find better solution, e.g. activation = Func<Matrix, float)
-        //    // return new Matrix(z.Select(z_j => activation(z_j)).ToArray())
-        //    //     .Log($"\nA = ");
+        //    // return new Matrix(z.Select(z_j => activation(z_j)).ToArray());
         //}
         //internal static Matrix Get_C(Matrix a, Matrix t, Func<float, float, float> c_j)
         //{
@@ -44,14 +43,12 @@ namespace FourPixCam
         //        result[j] = c_j(a[j], t[j]);
         //    }
 
-        //    return result
-        //        .Log($"\n{c_j.Method.DeclaringType.Name} C =");
+        //    return result;
         //}
         //internal static float Get_CTotal(Matrix a, Matrix t, Func<float, float, float> c0)
         //{
         //    // CTotal = total or averaged (i.e. sum divided by a.m)?
-        //    return (Get_C(a, t, c0).Sum())
-        //        .Log<float>($"\nCTotal = \n");
+        //    return (Get_C(a, t, c0).Sum());
         //}
         /// <param name="a">L</param>
         /// <param name="z">L</param>
@@ -76,8 +73,7 @@ namespace FourPixCam
         //    Matrix dCda = w.Transpose * delta;
         //    Matrix dadz = activationDerivation(z);
             
-        //    return HadamardProduct(dCda, dadz)
-        //        .Log($"\ndelta =");
+        //    return HadamardProduct(dCda, dadz);
         //}
         /// <param name="w">l</param>
         /// <param name="delta">l</param>
@@ -86,15 +82,13 @@ namespace FourPixCam
         {
             Matrix result = new Matrix(w.m, w.n);
             result = w - learningRate * (delta * a.Transpose);
-            return result
-                .Log($"\nnextW =");
+            return result;
         }
         /// <param name="b">l</param>
         /// <param name="delta">l</param>
         internal static Matrix Get_CorrectedBiases(Matrix b, Matrix delta, float learningRate)
         {
-            return (b - learningRate * delta)
-                .Log($"\nnextB =");
+            return (b - learningRate * delta);
         }
     }
 }

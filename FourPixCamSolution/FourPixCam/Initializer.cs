@@ -26,7 +26,7 @@ namespace FourPixCam
 
             Net = NeuralNetFactory.GetNeuralNet(_netParameters);
             Samples = Creator.GetSampleSet(_sampleSetParameters);
-            Trainer = new Trainer(Net.Log(), _netParameters);
+            Trainer = new Trainer(Net, _netParameters);
         }
         public Initializer(NetParameters netParameters, SampleSet samples)//
         {
@@ -40,7 +40,7 @@ namespace FourPixCam
             #endregion
 
             Net = NeuralNetFactory.GetNeuralNet(_netParameters);
-            Trainer = new Trainer(Net.Log(), _netParameters);
+            Trainer = new Trainer(Net, _netParameters);
         }
 
 
