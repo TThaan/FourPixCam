@@ -35,11 +35,8 @@ namespace FourPixCam
                     Layers[i].Processed.ProjectiveField = Layers[i + 1];
                 }
             }
-            // Layers[Layers.Length - 2].Processed.ProjectiveField = Layers[Layers.Length - 1];
 
             CostType = costType;
-
-            // Define cost and costDerivation here?!
         }
 
         #endregion
@@ -70,7 +67,7 @@ namespace FourPixCam
         /// <returns>cost matrix?</returns>
         public void PropagateBack(Matrix expectedOutput, float learningRate)
         {
-            Layers.Last().Processed.ProcessOutputDelta(expectedOutput, CostDerivation, learningRate);
+            Layers.Last().Processed.ProcessDelta(expectedOutput, CostDerivation, learningRate);
         }
 
         #endregion

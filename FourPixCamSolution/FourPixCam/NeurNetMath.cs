@@ -81,7 +81,21 @@ namespace FourPixCam
         internal static Matrix Get_CorrectedWeights(Matrix w, Matrix delta, Matrix a, float learningRate)
         {
             Matrix result = new Matrix(w.m, w.n);
-            result = w - learningRate * (delta * a.Transpose);
+
+            var v1 = delta * a.Transpose;
+            Matrix v1Test = new Matrix(delta.m, a.Transpose.n);
+            v1Test.SetScalarProduct(delta, a.Transpose);
+
+            var v2 = learningRate * v1;
+            Matrix v2Test = new Matrix(delta.m, a.Transpose.n);
+            v2Test = v2Test.Multiplicate(v1Test, learningRate);
+
+            var v3 = w - v2;
+            Matrix v3Test = new Matrix(delta.m, a.Transpose.n);
+            v3Test = v3Test.Subtract(w, v2Test);
+
+            result = v3Test;
+            // result = w - learningRate * (delta * a.Transpose);
             return result;
         }
         /// <param name="b">l</param>

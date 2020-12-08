@@ -30,7 +30,9 @@ namespace FourPixCam
         public int Id { get; set; }
         public int N { get; set; }
         public ActivationType ActivationType { get; set; }
+        // Better define as Inteface/Abstract:
         public Func<Matrix, Matrix, Matrix> Activation { get; set; }
+        // Better define as Inteface/Abstract:
         public Func<Matrix, Matrix, Matrix> ActivationDerivation { get; set; }
         public Matrix Weights { get; set; }
         public Matrix Biases { get; set; }
@@ -116,14 +118,6 @@ namespace FourPixCam
 
         #endregion
 
-        public void Reset()
-        {
-            Output = new Matrix(_layer.N);
-            Input = new Matrix(_layer.N);
-            DCDA = new Matrix(_layer.N);
-            Delta = new Matrix(_layer.N);
-        }
-
         /// <summary>
         /// "Weighted Sum" (z).
         /// </summary>
@@ -138,6 +132,7 @@ namespace FourPixCam
         /// in hidden layer: DCDA = ScalarProduct(ProjectiveField.Weights.Transpose, ProjectiveField.Processed.Delta)
         /// </summary>
         public Matrix DCDA { get; set; }
+        public Matrix DADZ { get; set; }
         public Matrix Delta { get; set; }
         /// <summary>
         /// 'Previous' Layer (providing input to this layer,
@@ -150,64 +145,89 @@ namespace FourPixCam
         /// </summary>
         public Layer ProjectiveField { get; set; }
 
-        // Wa: diff weight/bias range for diff layer?
-
+        public void Reset()
+        {
+            Output = new Matrix(_layer.N);
+            Input = new Matrix(_layer.N);
+            DCDA = new Matrix(_layer.N);
+            DADZ = new Matrix(_layer.N);
+            Delta = new Matrix(_layer.N);
+        }
         public void ProcessInput(Matrix originalInput = null)
         {
-            // Test: Compare with and without return value (get vs set).
-            // Use ExtMeth in Activators?
+            SetInput(originalInput);
+            SetOutput();
+            ProjectiveField?.Processed.ProcessInput();
+        }
+        public void ProcessDelta(Matrix expectedOutput, Func<Matrix, Matrix, Matrix> costDerivation, float learningRate)
+        {
+            SetDCDA(expectedOutput, costDerivation);
+            SetDADZ();
+            SetDelta();
 
+            AdaptWeightsAndBiases(learningRate);
+            ReceptiveField?.Processed.ProcessDelta(expectedOutput, costDerivation, learningRate);
+        }
+
+        #region helpers
+
+        public void SetInput(Matrix originalInput)
+        {
             if (originalInput != null)
             {
                 Input = new Matrix(originalInput);
             }
             else
             {
-                Input.ForEach(x => 0);
-                Input = Input.GetScalarProduct(_layer.Weights, ReceptiveField.Processed.Output);
+                // Input.ForEach(x => 0);
+                Input.SetScalarProduct(_layer.Weights, ReceptiveField.Processed.Output);
             }
 
             if (_layer.Biases != null)
                 Input = Input.Add(_layer.Biases);
+        }
+        public void SetOutput()
+        {
             Output.ForEach(x => 0);
             Output = _layer.Activation(Output, Input);
-
-            ProjectiveField?.Processed.ProcessInput();
         }
-        public void ProcessOutputDelta(Matrix expectedOutput, Func<Matrix, Matrix, Matrix> costDerivation, float learningRate)
+        public void SetDCDA(Matrix expectedOutput, Func<Matrix, Matrix, Matrix> costDerivation)
         {
-            if (ProjectiveField != null) 
-                throw new ArgumentException("'ProcessCost(..)' can only be called in the output layer.");
-
             DCDA.ForEach(x => 0);
-            DCDA = costDerivation(DCDA, expectedOutput);
 
-            Delta.ForEach(x => 0);
-            Delta = _layer.ActivationDerivation(Delta, Input).GetHadamardProduct(DCDA);
-            AdaptWeightsAndBiases(learningRate);
-            ReceptiveField?.Processed.ProcessHiddenDelta(learningRate);
-        }
-
-        #region helpers
-
-        void ProcessHiddenDelta(float learningRate)
-        {
             if (ProjectiveField == null)
-                throw new ArgumentException("'ProcessDelta(..)' can only be called in a hidden layer.");
-
-            DCDA.ForEach(x => 0);
-            DCDA = DCDA.GetScalarProduct(ProjectiveField.Weights.Transpose, ProjectiveField.Processed.Delta);
-
-            Delta.ForEach(x => 0);
-            Delta = _layer.ActivationDerivation(Delta, Input).GetHadamardProduct(DCDA);
-            AdaptWeightsAndBiases(learningRate);
-            ReceptiveField?.Processed.ProcessHiddenDelta(learningRate);
+            {
+                DCDA = costDerivation(DCDA, expectedOutput);
+            }
+            else
+            {
+                DCDA.SetScalarProduct(ProjectiveField.Weights.Transpose, ProjectiveField.Processed.Delta);
+            }
         }
-        void AdaptWeightsAndBiases(float learningRate)
+        public void SetDADZ()
+        {
+            DADZ.ForEach(x => 0);
+            DADZ = _layer.ActivationDerivation(DADZ, Input);
+        }
+        public void SetDelta()
+        {
+            Delta.ForEach(x => 0);
+            Delta.SetHadamardProduct(DCDA, DADZ);
+        }
+
+        public void AdaptWeightsAndBiases(float learningRate)
         {
             if (ReceptiveField != null)
             {
-                _layer.Weights = Get_CorrectedWeights(_layer.Weights, Delta, _layer.Processed.ReceptiveField.Processed.Output, learningRate);
+                Matrix tmp1 = new Matrix(Delta.m, _layer.Processed.ReceptiveField.Processed.Output.Transpose.n);
+                Matrix tmp2 = new Matrix(Delta.m, _layer.Processed.ReceptiveField.Processed.Output.Transpose.n);
+                Matrix tmp3 = new Matrix(Delta.m, _layer.Processed.ReceptiveField.Processed.Output.Transpose.n);
+
+                tmp1.SetScalarProduct(Delta, _layer.Processed.ReceptiveField.Processed.Output.Transpose);
+                tmp2 = tmp2.Multiplicate(tmp1, learningRate);
+                _layer.Weights = tmp3.Subtract(_layer.Weights, tmp2);
+
+                // _layer.Weights = Get_CorrectedWeights(_layer.Weights, Delta, _layer.Processed.ReceptiveField.Processed.Output, learningRate);
             }
             
             if (_layer.Biases != null)

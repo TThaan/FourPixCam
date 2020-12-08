@@ -87,7 +87,7 @@ namespace FourPixCam
                 t34sum += t4 - t3;
                 t45sum += t5 - t4;
 
-                if (sample > 100)
+                if (sample > 998)
                 {
                     // ..
                 }
