@@ -1,5 +1,6 @@
 ﻿using FourPixCam.CostFunctions;
 using MatrixHelper;
+using NNet_InputProvider;
 using System;
 using System.Collections.ObjectModel;
 using System.Linq;
@@ -14,7 +15,7 @@ namespace FourPixCam
         #region ctor & fields
 
         int layerCount;
-        Func<Matrix, Matrix, Matrix> cost, costDerivation; // Redundant? (Not saving values here but refs to methods)
+        Action<Matrix, Matrix, Matrix> cost, costDerivation; // Redundant? (Not saving values here but refs to methods)
 
         // Only needed if ProcessingNet is a child class:
         public NeuralNet(NeuralNet net)
@@ -49,11 +50,11 @@ namespace FourPixCam
             : layerCount;
         public CostType CostType { get; set; }
         // Redundant?:
-        public Func<Matrix, Matrix, Matrix> Cost => cost == default
+        public Action<Matrix, Matrix, Matrix> Cost => cost == default
             ? cost = GetCost()
             : cost;
         // Redundant?:
-        public Func<Matrix, Matrix, Matrix> CostDerivation => costDerivation == default
+        public Action<Matrix, Matrix, Matrix> CostDerivation => costDerivation == default
             ? costDerivation = GetCostDerivation()
             : costDerivation;
 
@@ -61,20 +62,23 @@ namespace FourPixCam
         {
             Layers[0].Processed.ProcessInput(input);
         }
-        /// <summary>
-        /// 
-        /// </summary>
-        /// <returns>cost matrix?</returns>
-        public void PropagateBack(Matrix expectedOutput, float learningRate)
+        public void PropagateBack(Matrix expectedOutput, Sample debugSample)
         {
-            Layers.Last().Processed.ProcessDelta(expectedOutput, CostDerivation, learningRate);
+            Layers.Last().Processed.ProcessDelta(expectedOutput, CostDerivation, debugSample, Cost);
+        }
+        public void AdjustWeightsAndBiases(float learningRate)
+        {
+            foreach (Layer layer in Layers)
+            {
+                layer.Processed.AdaptWeightsAndBiases(learningRate);
+            }
         }
 
         #endregion
 
         #region helpers
 
-        Func<Matrix, Matrix, Matrix> GetCost()
+        Action<Matrix, Matrix, Matrix> GetCost()
         {
             switch (CostType)
             {
@@ -86,7 +90,7 @@ namespace FourPixCam
                     return default;
             }
         }
-        Func<Matrix, Matrix, Matrix> GetCostDerivation()
+        Action<Matrix, Matrix, Matrix> GetCostDerivation()
         {
             switch (CostType)
             {

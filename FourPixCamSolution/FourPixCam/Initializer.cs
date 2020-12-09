@@ -13,7 +13,7 @@ namespace FourPixCam
         NetParameters _netParameters;
         SampleSetParameters _sampleSetParameters;
 
-        public Initializer(NetParameters netParameters, SampleSetParameters sampleSetParameters)//
+        public Initializer(NetParameters netParameters, SampleSetParameters sampleSetParameters)
         {
             #region Parameter Checks
 

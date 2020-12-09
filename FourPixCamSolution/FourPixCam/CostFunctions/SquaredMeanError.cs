@@ -1,4 +1,6 @@
 ﻿using MatrixHelper;
+using System;
+using static MatrixHelper.Operations2;
 
 namespace FourPixCam.CostFunctions
 {
@@ -9,7 +11,7 @@ namespace FourPixCam.CostFunctions
         /// </summary>
         internal static float CostFunction(float a, float t)
         {
-            return (t-a) * (t - a); //0.5f * 
+            return (t - a) * (t - a); //0.5f * 
         }
         /// <summary>
         /// Partial derivative of the cost with respect to a single output neuron a.
@@ -18,14 +20,26 @@ namespace FourPixCam.CostFunctions
         {
             return (a - t);//2*
         }
-        internal static Matrix CostFunction(Matrix a, Matrix t)
+        /// <summary>
+        /// result = DCDA
+        /// </summary>
+        internal static void CostFunction(Matrix a, Matrix t, Matrix result)
         {
-            return t.Subtract(a) * t.Subtract(a);
-            // return (t - a) * (t - a); //0.5f * 
+            for (int j = 0; j < result.m; j++)
+            {
+                result[j] = (t[j] - a[j]) * (t[j] - a[j]);
+            }
+            // Subtract(a, t, result);
+            //result *= result;
+            // throw new Exception();
+            //SetHadamardProduct((t - a), (t - a), result); //0.5f * 
         }
-        internal static Matrix DerivationOfCostFunction(Matrix a, Matrix t)
+        /// <summary>
+        /// result = DCDA
+        /// </summary>
+        internal static void DerivationOfCostFunction(Matrix a, Matrix t, Matrix result)
         {
-            return a.Subtract(t);
+            Subtract(a, t, result);
             // return (a - t);//2*
         }
     }

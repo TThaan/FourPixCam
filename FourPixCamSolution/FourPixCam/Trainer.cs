@@ -10,8 +10,8 @@ namespace FourPixCam
         #region ctor & fields
 
         float _learningRate, _learningRateChange, _epochCount, currentAccuracy;
-        DateTime t1 = default, t2 = default, t3 = default, t4 = default, t5 = default;
-        TimeSpan t12sum, t23sum, t34sum, t45sum, t51sum;
+        DateTime t1 = default, t2 = default, t3 = default, t4 = default, t5 = default, t6 = default;
+        TimeSpan t12sum, t23sum, t34sum, t45sum, t56sum, t61sum;
 
         internal Trainer(NeuralNet net, NetParameters netParameters)
         {
@@ -35,6 +35,7 @@ namespace FourPixCam
             {
                 currentAccuracy = await TrainEpoch(trainingSamples, testingSamples, epoch, observerGap);  
                 _learningRate *= _learningRateChange;
+                trainingSamples.Shuffle();
             }
 
             return currentAccuracy;
@@ -53,13 +54,15 @@ namespace FourPixCam
             {
                 #region debugging
 
-                t1 = DateTime.Now;
-                t51sum += t1 - t5;
+                // t1 = DateTime.Now;
+                // t61sum += t1 - t6;
 
                 Net.FeedForward(trainingSamples[sample].Input);
-                t2 = DateTime.Now;
-                Net.PropagateBack(trainingSamples[sample].ExpectedOutput, _learningRate);
-                t3 = DateTime.Now;
+                // t2 = DateTime.Now;
+                Net.PropagateBack(trainingSamples[sample].ExpectedOutput, trainingSamples[sample]);
+                // t3 = DateTime.Now;
+                Net.AdjustWeightsAndBiases(_learningRate);
+                // t4 = DateTime.Now;
 
                 #endregion
 
@@ -71,21 +74,22 @@ namespace FourPixCam
                 gap++;
 
                 // debugging
-                t4 = DateTime.Now;
+                // t5 = DateTime.Now;
 
                 //var continue = await OnStepFinishedAsync($"Accuracy: {currentAccuracy} (Epoch: {currentEpoch}, Sample: {sample})");
                 Task isPauseOver = OnPausedAsync($"Accuracy: {currentAccuracy} (Epoch: {currentEpoch}, Sample: {sample})");
                 isPauseOver.Wait();
 
                 // debugging
-                t5 = DateTime.Now;
+                // t6 = DateTime.Now;
 
                 #region debugging
 
-                t12sum += t2 - t1;
-                t23sum += t3 - t2;
-                t34sum += t4 - t3;
-                t45sum += t5 - t4;
+                // t12sum += t2 - t1;
+                // t23sum += t3 - t2;
+                // t34sum += t4 - t3;
+                // t45sum += t5 - t4;
+                // t56sum += t6 - t5;
 
                 if (sample > 998)
                 {

@@ -33,7 +33,41 @@ namespace FourPixCam
         #endregion
 
         #region helpers
-
+        //static void SetWeights(NetParameters netParameters)
+        //{
+        //    netParameters.Layers[1].Weights = new Matrix(new float[,]
+        //        {
+        //            { -.4f, -.2f, .0f, .2f },
+        //            { .1f, .2f, .3f, .4f },
+        //            { .3f, .1f, -.2f, .4f },
+        //            { -.1f, .2f, .3f, -.4f }
+        //        });
+        //    netParameters.Layers[2].Weights = new Matrix(new float[,]
+        //        {
+        //            { .1f, -.3f, .0f, .3f },
+        //            { .2f, -.2f, -.1f, .4f },
+        //            { .2f, -.1f, -.3f, .4f },
+        //            { -.2f, .1f, .4f, .2f }
+        //        });
+        //    netParameters.Layers[3].Weights = new Matrix(new float[,]
+        //        {
+        //            { -.4f, -.2f, .3f, .2f },
+        //            { .1f, .2f, .3f, .4f },
+        //            { .3f, .1f, .2f, .4f },
+        //            { .1f, -.2f, .3f, -.4f },
+        //            { .3f, .1f, .4f, .1f },
+        //            { .3f, .1f, -.2f, .0f },
+        //            { -.1f, -.2f, .3f, -.4f },
+        //            { .4f, -.4f, .1f, .2f }
+        //        });
+        //    netParameters.Layers[4].Weights = new Matrix(new float[,]
+        //        {
+        //            { .2f, .0f, .4f, -.2f, .3f, .2f, .0f, .1f },
+        //            { -.1f, .3f, .1f, .0f, .4f, .2f, .0f, -.2f },
+        //            { .3f, .1f, -.3f, .1f, .3f, .2f, -.4f, .2f },
+        //            { .4f, .4f, -.2f, .4f, .1f, -.2f, .2f, .2f }
+        //        });
+        //}
         static void SetWeights(NetParameters netParameters)
         {
             // Iterate over layers (skip first layer).

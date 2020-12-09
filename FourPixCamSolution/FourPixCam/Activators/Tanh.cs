@@ -26,15 +26,7 @@ namespace FourPixCam.Activators
         /// </summary>
         public static float Derivation(float z)
         {
-            var result = 1 - Activation(z) * Activation(z);
-            //if (float.IsInfinity(result))
-            //{
-
-            //}
-            //if (float.IsNaN(result))
-            //{
-
-            //}
+            var result = 1 - (Activation(z) * Activation(z));
             return result;
         }
         /// <summary>
@@ -42,7 +34,7 @@ namespace FourPixCam.Activators
         /// </summary>
         public static Matrix Derivation(Matrix result, Matrix z)
         {
-            return result.ForEach(z, x => 1 - Activation(x) * Activation(x));
+            return result.ForEach(z, x => Derivation(x));
         }
     }
 }

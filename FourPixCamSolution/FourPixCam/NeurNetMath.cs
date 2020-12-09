@@ -3,7 +3,7 @@ using FourPixCam.CostFunctions;
 using MatrixHelper;
 using System;
 using System.Linq;
-using static MatrixHelper.Operations;
+using static MatrixHelper.Operations2;
 
 namespace FourPixCam
 {
@@ -63,7 +63,8 @@ namespace FourPixCam
             // activationDerivation(z);
 
             // Changes costDerivation (former a) to delta of output layer
-            result = costDerivation(a, t).GetHadamardProduct(activationDerivation(z));
+            // result = costDerivation(a, t).SetHadamardProduct(activationDerivation(z));
+            throw new Exception();
         }
         /// <param name="w">l+1</param>
         /// <param name="delta">l+1</param>
@@ -84,15 +85,15 @@ namespace FourPixCam
 
             var v1 = delta * a.Transpose;
             Matrix v1Test = new Matrix(delta.m, a.Transpose.n);
-            v1Test.SetScalarProduct(delta, a.Transpose);
+            SetScalarProduct(delta, a.Transpose, v1Test);
 
             var v2 = learningRate * v1;
             Matrix v2Test = new Matrix(delta.m, a.Transpose.n);
-            v2Test = v2Test.Multiplicate(v1Test, learningRate);
+            Multiplicate(v1Test, learningRate, v2Test);
 
             var v3 = w - v2;
             Matrix v3Test = new Matrix(delta.m, a.Transpose.n);
-            v3Test = v3Test.Subtract(w, v2Test);
+            Subtract(w, v2Test, v3Test);
 
             result = v3Test;
             // result = w - learningRate * (delta * a.Transpose);
