@@ -158,12 +158,21 @@ namespace FourPixCam
         public void ProcessInput(Matrix originalInput = null)
         {
             SetInput(originalInput);
+            if (_layer.Id > 0)
+            {
+                Input.Log($"\n\nInput L{_layer.Id}");
+            }
             SetOutput();
+            if (_layer.Id > 0)
+            {
+                Output.Log($"\n\nOutput L{_layer.Id}");
+            }
             ProjectiveField?.Processed.ProcessInput();
         }
-        public void ProcessDelta(Matrix expectedOutput, Action<Matrix, Matrix, Matrix> costDerivation, Sample debugSample, Action<Matrix, Matrix, Matrix> costFunction)
+        public void ProcessDelta(Matrix expectedOutput, Action<Matrix, Matrix, Matrix> costDerivation)
         {
             SetDCDA(Output, expectedOutput, costDerivation);
+            DCDA.Log($"\n\nDCDA L{_layer.Id}");
 
             // Test:
 
@@ -177,8 +186,10 @@ namespace FourPixCam
             //}
 
             SetDADZ();
+            DADZ.Log($"\n\nDADZ L{_layer.Id}");
             SetDelta();
-            ReceptiveField?.Processed.ProcessDelta(expectedOutput, costDerivation, debugSample, costFunction);
+            Delta.Log($"\n\nDelta L{_layer.Id}");
+            ReceptiveField?.Processed.ProcessDelta(expectedOutput, costDerivation);
         }
 
         #region helpers
@@ -228,7 +239,7 @@ namespace FourPixCam
             }
             else
             {
-                SetScalarProduct(ProjectiveField.Weights.Transpose, ProjectiveField.Processed.Delta, DCDA);
+                SetScalarProduct(ProjectiveField.Weights.GetTranspose(), ProjectiveField.Processed.Delta, DCDA);
             }
         }
         public void SetDADZ()
@@ -246,20 +257,26 @@ namespace FourPixCam
         {
             if (ReceptiveField != null)
             {
-                Matrix tmp1 = new Matrix(Delta.m, _layer.Processed.ReceptiveField.Processed.Output.Transpose.n);
-                Matrix weightsChange = new Matrix(Delta.m, _layer.Processed.ReceptiveField.Processed.Output.Transpose.n);
-                Matrix newWeights = new Matrix(Delta.m, _layer.Processed.ReceptiveField.Processed.Output.Transpose.n);
+                Matrix tmp1 = new Matrix(Delta.m, _layer.Processed.ReceptiveField.Processed.Output.m);
+                Matrix weightsChange = new Matrix(Delta.m, _layer.Processed.ReceptiveField.Processed.Output.m);
+                Matrix newWeights = new Matrix(Delta.m, _layer.Processed.ReceptiveField.Processed.Output.m);
 
-                SetScalarProduct(Delta, _layer.Processed.ReceptiveField.Processed.Output.Transpose, tmp1);
+                SetScalarProduct(Delta, _layer.Processed.ReceptiveField.Processed.Output.GetTranspose(), tmp1);
                 Multiplicate(tmp1, -learningRate, weightsChange);
                 Add(_layer.Weights, weightsChange, newWeights);
-                _layer.Weights = newWeights;
+
+                _layer.Weights.Log($"\n\nOldW L{_layer.Id}");
+                weightsChange.Log($"\n\ndW (variant 1)  L{_layer.Id}");
+                Matrix diff = (newWeights - _layer.Weights).Log($"\n\ndW (variant 2) L{_layer.Id}");
+                newWeights.Log($"\n\nNextW L{_layer.Id}");
+
+                _layer.Weights = new Matrix(newWeights);
                 // _layer.Weights = Get_CorrectedWeights(_layer.Weights, Delta, _layer.Processed.ReceptiveField.Processed.Output, learningRate);
             }
             
             if (_layer.Biases != null)
             {
-                _layer.Biases = Get_CorrectedBiases(_layer.Biases, Delta, learningRate);
+                // _layer.Biases = Get_CorrectedBiases(_layer.Biases, Delta, learningRate);
             }
         }
         

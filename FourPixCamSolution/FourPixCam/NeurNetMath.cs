@@ -83,20 +83,20 @@ namespace FourPixCam
         {
             Matrix result = new Matrix(w.m, w.n);
 
-            var v1 = delta * a.Transpose;
-            Matrix v1Test = new Matrix(delta.m, a.Transpose.n);
-            SetScalarProduct(delta, a.Transpose, v1Test);
+            //var v1 = delta * a.Transpose;
+            //Matrix v1Test = new Matrix(delta.m, a.Transpose.n);
+            //SetScalarProduct(delta, a.Transpose, v1Test);
 
-            var v2 = learningRate * v1;
-            Matrix v2Test = new Matrix(delta.m, a.Transpose.n);
-            Multiplicate(v1Test, learningRate, v2Test);
+            //var v2 = learningRate * v1;
+            //Matrix v2Test = new Matrix(delta.m, a.Transpose.n);
+            //Multiplicate(v1Test, learningRate, v2Test);
 
-            var v3 = w - v2;
-            Matrix v3Test = new Matrix(delta.m, a.Transpose.n);
-            Subtract(w, v2Test, v3Test);
+            //var v3 = w - v2;
+            //Matrix v3Test = new Matrix(delta.m, a.Transpose.n);
+            //Subtract(w, v2Test, v3Test);
 
-            result = v3Test;
-            // result = w - learningRate * (delta * a.Transpose);
+            //result = v3Test;
+            //// result = w - learningRate * (delta * a.Transpose);
             return result;
         }
         /// <param name="b">l</param>

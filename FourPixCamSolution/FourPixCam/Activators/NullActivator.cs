@@ -16,7 +16,7 @@ namespace FourPixCam.Activators
         /// </summary>
         public static Matrix Activation(Matrix result, Matrix z)
         {
-            return result = z;
+            return result = result.ForEach(z, x => x);
         }
         /// <summary>
         /// Derivation of the activation ('squashing') function with respect to the weighted input z.
@@ -32,7 +32,7 @@ namespace FourPixCam.Activators
         public static Matrix Derivation(Matrix result, Matrix z)
         {
             // Check:
-            return result.ForEach(z, x => 1);
+            return result.ForEach(x => 1);
         }
     }
 }

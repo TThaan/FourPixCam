@@ -1,7 +1,10 @@
-﻿using NNet_InputProvider;
+﻿using MatrixHelper;
+using NNet_InputProvider;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using static FourPixCam.Logger;
 
 namespace FourPixCam
 {
@@ -10,12 +13,17 @@ namespace FourPixCam
         #region ctor & fields
 
         float _learningRate, _learningRateChange, _epochCount, currentAccuracy;
-        DateTime t1 = default, t2 = default, t3 = default, t4 = default, t5 = default, t6 = default;
-        TimeSpan t12sum, t23sum, t34sum, t45sum, t56sum, t61sum;
 
-        internal Trainer(NeuralNet net, NetParameters netParameters)
+        public Trainer(NeuralNet net, NetParameters netParameters)
         {
-            Net = net;//.GetCopy()
+            #region
+
+            IsLogOn = true;
+            StandardDisplay = Display.ToFile;
+
+            #endregion
+
+            Net = net.Log();//.GetCopy()
             _learningRate = netParameters.LearningRate;
             _learningRateChange = netParameters.LearningRateChange;
             _epochCount = netParameters.EpochCount;
@@ -33,9 +41,9 @@ namespace FourPixCam
 
             for (int epoch = 0; epoch < _epochCount; epoch++)
             {
-                currentAccuracy = await TrainEpoch(trainingSamples, testingSamples, epoch, observerGap);  
+                currentAccuracy = await TrainEpoch(trainingSamples, testingSamples, epoch, observerGap);
                 _learningRate *= _learningRateChange;
-                trainingSamples.Shuffle();
+                // trainingSamples.Shuffle();
             }
 
             return currentAccuracy;
@@ -47,57 +55,52 @@ namespace FourPixCam
         
         async Task<float> TrainEpoch(Sample[] trainingSamples, Sample[] testingSamples, int currentEpoch, int observerGap)
         {
-            // observerGap = 100;
+            LogTitle("T R A I N I N G", '*');
+            Log(_learningRate, nameof(_learningRate) + ": ");
+            Log(currentEpoch, nameof(currentEpoch) + ": ");
+            Log(_epochCount, nameof(_epochCount) + ": ");
+
             int gap = observerGap;
 
-            for (int sample = 0; sample < trainingSamples.Length; sample++)
+            for (int sampleNr = 0; sampleNr < trainingSamples.Length; sampleNr++)
             {
-                #region debugging
+                // debug
+                Sample s = trainingSamples[sampleNr];
 
-                // t1 = DateTime.Now;
-                // t61sum += t1 - t6;
+                LogTitle("F E E D   F O R W A R D", '*');
+                Log($"epoch/sample: {currentEpoch}/{sampleNr}");
 
-                Net.FeedForward(trainingSamples[sample].Input);
-                // t2 = DateTime.Now;
-                Net.PropagateBack(trainingSamples[sample].ExpectedOutput, trainingSamples[sample]);
-                // t3 = DateTime.Now;
+                trainingSamples[sampleNr].Input.Log($"\nOriginal Sample Input/Output\n");
+                Log("\n    -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   -   ");
+
+                Net.FeedForward(trainingSamples[sampleNr].Input);
+
+                LogTitle("B A C K P R O P A P A G A T I O N", '*');
+                Log($"epoch/sample: {currentEpoch}/{sampleNr}");
+                s.ExpectedOutput.Log("\nTarget\n");
+                float totalCost = Net.CostFunction(Net.Layers.Last().Processed.Output, trainingSamples[sampleNr].ExpectedOutput);
+                totalCost.Log("         Total Cost = ");
+                Net.PropagateBack(trainingSamples[sampleNr].ExpectedOutput, trainingSamples[sampleNr]);
                 Net.AdjustWeightsAndBiases(_learningRate);
-                // t4 = DateTime.Now;
-
-                #endregion
 
                 if (gap == observerGap)
                 {
-                    OnSomethingHappend($"Accuracy: {currentAccuracy} (Epoch: {currentEpoch}, Sample: {sample})");
+                    OnSomethingHappend($"Accuracy: {currentAccuracy} (Epoch: {currentEpoch}, Sample: {sampleNr})");
                     gap = 0;
                 }
                 gap++;
 
-                // debugging
-                // t5 = DateTime.Now;
-
                 //var continue = await OnStepFinishedAsync($"Accuracy: {currentAccuracy} (Epoch: {currentEpoch}, Sample: {sample})");
-                Task isPauseOver = OnPausedAsync($"Accuracy: {currentAccuracy} (Epoch: {currentEpoch}, Sample: {sample})");
-                isPauseOver.Wait();
+                // Task isPauseOver = OnPausedAsync($"Accuracy: {currentAccuracy} (Epoch: {currentEpoch}, Sample: {sampleNr})");
+                // isPauseOver.Wait();
 
-                // debugging
-                // t6 = DateTime.Now;
-
-                #region debugging
-
-                // t12sum += t2 - t1;
-                // t23sum += t3 - t2;
-                // t34sum += t4 - t3;
-                // t45sum += t5 - t4;
-                // t56sum += t6 - t5;
-
-                if (sample > 998)
-                {
-                    // ..
-                }
-
-                #endregion
+                Log($"                                    Current Accuracy : {currentAccuracy}    (eta = {_learningRate})", Display.ToFile);
             }
+
+            // _learningRate *= .9f;
+
+            LogTitle("T e s t", '*');
+            Log($"epoch: {currentEpoch}");
 
             return await Test(testingSamples);
         }
@@ -107,7 +110,7 @@ namespace FourPixCam
             {
                 int bad = 0, good = 0;
 
-                foreach (var sample in testingSamples.Shuffle())
+                foreach (var sample in testingSamples)
                 {
                     Net.FeedForward(sample.Input);
                     sample.ActualOutput = Net.Layers.Last().Processed.Output;
@@ -120,6 +123,7 @@ namespace FourPixCam
                     {
                         bad++;
                     }
+                    sample.Log();
                 }
                 return (float)good / (good + bad);
             });            

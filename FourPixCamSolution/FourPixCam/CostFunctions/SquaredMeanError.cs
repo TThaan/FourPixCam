@@ -23,16 +23,20 @@ namespace FourPixCam.CostFunctions
         /// <summary>
         /// result = DCDA
         /// </summary>
-        internal static void CostFunction(Matrix a, Matrix t, Matrix result)
+        internal static float Cost(Matrix a, Matrix t)
         {
-            for (int j = 0; j < result.m; j++)
+            float result = 0;
+
+            for (int j = 0; j < a.m; j++)
             {
-                result[j] = (t[j] - a[j]) * (t[j] - a[j]);
+                result += (t[j] - a[j]) * (t[j] - a[j]);//0.5f * 
             }
+
+            return result;
             // Subtract(a, t, result);
             //result *= result;
             // throw new Exception();
-            //SetHadamardProduct((t - a), (t - a), result); //0.5f * 
+            //SetHadamardProduct((t - a), (t - a), result); //
         }
         /// <summary>
         /// result = DCDA
@@ -40,7 +44,11 @@ namespace FourPixCam.CostFunctions
         internal static void DerivationOfCostFunction(Matrix a, Matrix t, Matrix result)
         {
             Subtract(a, t, result);
-            // return (a - t);//2*
+            //result.ForEach(x => 2 * x);
+
+            // Multiplicate(result, 2, result);
+
+            // return (a - t);//
         }
     }
 }

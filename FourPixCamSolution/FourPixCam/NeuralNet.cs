@@ -15,7 +15,8 @@ namespace FourPixCam
         #region ctor & fields
 
         int layerCount;
-        Action<Matrix, Matrix, Matrix> cost, costDerivation; // Redundant? (Not saving values here but refs to methods)
+        Func<Matrix, Matrix, float> costFunction;
+        Action<Matrix, Matrix, Matrix> costDerivation;
 
         // Only needed if ProcessingNet is a child class:
         public NeuralNet(NeuralNet net)
@@ -50,9 +51,9 @@ namespace FourPixCam
             : layerCount;
         public CostType CostType { get; set; }
         // Redundant?:
-        public Action<Matrix, Matrix, Matrix> Cost => cost == default
-            ? cost = GetCost()
-            : cost;
+        public Func<Matrix, Matrix, float> CostFunction => costFunction == default
+            ? costFunction = GetCost()
+            : costFunction;
         // Redundant?:
         public Action<Matrix, Matrix, Matrix> CostDerivation => costDerivation == default
             ? costDerivation = GetCostDerivation()
@@ -64,7 +65,7 @@ namespace FourPixCam
         }
         public void PropagateBack(Matrix expectedOutput, Sample debugSample)
         {
-            Layers.Last().Processed.ProcessDelta(expectedOutput, CostDerivation, debugSample, Cost);
+            Layers.Last().Processed.ProcessDelta(expectedOutput, CostDerivation);
         }
         public void AdjustWeightsAndBiases(float learningRate)
         {
@@ -78,14 +79,14 @@ namespace FourPixCam
 
         #region helpers
 
-        Action<Matrix, Matrix, Matrix> GetCost()
+        Func<Matrix, Matrix, float> GetCost()
         {
             switch (CostType)
             {
                 case CostType.Undefined:
                     return default;
                 case CostType.SquaredMeanError:
-                    return SquaredMeanError.CostFunction;
+                    return SquaredMeanError.Cost;
                 default:
                     return default;
             }
